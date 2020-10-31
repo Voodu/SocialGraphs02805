@@ -131,7 +131,7 @@ def get_gcc(graph):
 # %%
 # Get data & build the hero graph for exercises
 data = get_preprocessed_csv_data(urls, universes)
-# for univ in univs: # TODO: UNCOMMENT!
+# for univ in universes: # TODO: UNCOMMENT!
 # 	save_pages_from_df(data[univ], univ)
 
 hero_graph = nx.DiGraph()
