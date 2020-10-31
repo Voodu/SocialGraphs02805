@@ -361,10 +361,6 @@ marvel_graph = get_subgraph_by_attribute(hero_undir, 'universe', 'marvel')
 marvel_communities = find_communities_from(marvel_graph)
 
 # %% [markdown]
-# > ### Answer:
-# In total, we have found 12 communities for the Marvel universe.
-
-# %% [markdown]
 # ### Plot the distribution of community sizes.
 
 
@@ -379,7 +375,7 @@ def plot_community_distribution(universe, community):
 # > ### Answer:
 
 
-plot_community_distribution('marvel', marvel_communities)
+plot_community_distribution('Marvel', marvel_communities)
 
 # %% [markdown]
 # ### For the 5-10 largest communities, create TF-IDF based rankings of words in each community. There are many ways to calculate TF-IDF, explain how you've done it and motivate your choices.
