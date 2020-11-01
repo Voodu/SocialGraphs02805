@@ -2,15 +2,25 @@
 import io
 import json
 import re
+import string
 from urllib.parse import quote
 from urllib.request import urlopen
 
 import community
 import matplotlib.pyplot as plt
 import networkx as nx
+import nltk
 import numpy as np
 import pandas as pd
 from fa2 import ForceAtlas2
+from wordcloud import WordCloud
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 #%%
 # Constants setup
@@ -299,7 +309,6 @@ plt.show()
 # # Exercise 2: Create your own version of the TF-TR word-clouds (from lecture 7). For this exercise we assume you know how to download and clean text from the wiki-pages.
 # Here's what you need to do:
 # ### That's it, really. The title says it all. Create your own version of the TF-TR word-clouds. Explain your process and comment on your results.
-# ### TODO: CODE
 # %% [markdown]
 # > ### Answer:
 # > ### TODO
@@ -364,11 +373,11 @@ marvel_communities = find_communities_from(marvel_graph)
 # ### Plot the distribution of community sizes.
 
 
-def plot_community_distribution(universe, community):
-    data = [value for _, value in community.items()]
-    title = f'The {universe} community size distribution'
+def plot_community_distribution(universe, communities):
+    data = [value for _, value in communities.items()]
+    title = f'The {universe} communities size distribution'
     caption = f'The histogram is representing the number of members assigned to each community from the {universe} community.'
-    barchart_distributions(data, title, caption, 'Community', 'Count')
+    barchart_distributions(data, title, caption, 'Communities', 'Count')
     plt.show()
 
 # %% [markdown]
@@ -379,14 +388,71 @@ plot_community_distribution('Marvel', marvel_communities)
 
 # %% [markdown]
 # ### For the 5-10 largest communities, create TF-IDF based rankings of words in each community. There are many ways to calculate TF-IDF, explain how you've done it and motivate your choices.
-# ### TODO: CODE
+
+
+def get_biggest_communities(communities, amount):
+    """
+    Return the nodes for given amount of biggest communities.
+    """
+
+    data = [value for _, value in communities.items()]
+    vector = list(range(np.min(data), np.max(data) + 2))
+    graph_values, _ = np.histogram(data, bins=vector)
+    biggest_communities = np.argsort(-graph_values)[:amount]
+
+    return {k: v for k, v in communities.items() if v in biggest_communities}
+
+
+def tokenize_text(text):
+    """
+    Parsing given text: removing punctuation, creating tokens,
+    setting to lowercase, removing stopwords, lemmatizing.
+    """
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    tokens = word_tokenize(text)
+    tokens = [token.lower() for token in tokens]
+    tokens = [token for token in tokens if token not in stopwords.words('english')]
+
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(token) for token in tokens]
+
+    return tokens
+
+
+def tokenize_texts(heroes, universe):
+    texts = {}
+    for hero in heroes:
+        try:
+            with io.open(f'{universe}/{hero}.txt', 'r', encoding='utf8') as f:
+                page_content = f.read()
+                page_content = tokenize_text(page_content)
+                texts[hero] = page_content
+        except FileNotFoundError:
+            pass
+
+    return texts
+
+
+biggest_communities = get_biggest_communities(marvel_communities, 6)
+tokenized_texts = tokenize_texts(biggest_communities.keys(), 'marvel')
+
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# The logarithmic function was chosen because of its slow rising curve. The weights in tf-idf filter out the common terms, hence the value for base defines the "speed" of filtering out those terms. 
 
 # %% [markdown]
 # ### Create a word-cloud displaying the most important words in each community (according to TF-IDF). Comment on your results (do they make sense according to what you know about the superhero characters in those communities?)
-# ### TODO: CODE
+
+
+def create_wordcloud(text):
+    """
+    Create a wordcloud based on a provided text.
+    """
+    wordcloud = WordCloud(max_font_size=40).generate(text)
+    plt.figure()
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()
 # %% [markdown]
 # > ### Answer:
 # > ### TODO
