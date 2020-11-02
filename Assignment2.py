@@ -401,7 +401,9 @@ for u in universes:
     create_global_wordcloud(s)
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# > ### Above wordclouds clearly show the most unique words for the given universes. When it comes to Marvel, despite popularity of Avengers: Endgame, X-Men & related (Wolverine, Xavier, Magneto) seem to be more frequently mentioned on Wikipedia. However, Avengers, Hulk, Thanos or Thor are also very popular there. Quite surprising hero here is Deadpool, which is clearly visible visible, especially compared to Spiderman, which is definitely more popular in the 'real' life.
+# > ### In DC world, Superman and Batman are definitely very important characters. Also the Green Lantern (lantern, Sinestro) topic can be  easily noticed. Probably the most visible supervillain in that universe is Brainiac.
+# > ### More explanation regarding the creation process can be found in function docstrings.
 
 # %% [markdown]
 # # Exercise 3: Find communities and create associated TF-IDF word clouds (from lecture 7 and 8). In this exercise, we assume that you have been able to find communities in your network. It's OK to only work on a single universe in this one.
