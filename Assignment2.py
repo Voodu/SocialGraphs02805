@@ -332,20 +332,7 @@ def find_communities_from(graph):
     Finding the communities, plotting them and printing the count.
     """
     partition = community.best_partition(graph)
-
-    # drawing
-    size = float(len(set(partition.values())))
-    pos = nx.spring_layout(graph)
-    count = 0.
-    for com in set(partition.values()):
-        count = count + 1.
-        list_nodes = [
-            nodes for nodes in partition.keys() if partition[nodes] == com]
-        nx.draw_networkx_nodes(
-            graph, pos, list_nodes, node_size=20, node_color=str(count / size))
-
-    nx.draw_networkx_edges(graph, pos, alpha=0.5)
-    plt.show()
+    count = len(set(partition.values()))
 
     print(f'No. of found communities: {count}')
 
@@ -364,6 +351,13 @@ def get_subgraph_by_attribute(graph, attribute, value):
 
     return graph.subgraph(nodes)
 
+
+def set_community_attribute(graph, attributes):
+    for hero in graph.nodes():
+        graph.nodes[hero]['community'] = attributes[hero]
+
+    return graph
+
 # %% [markdown]
 # > ### Answer:
 # To identify communities, the `community` package with the method `best_partition` was used. In this approach, firstly, a dendrogram is generated using the Louvain algorithm. The algorithm calculates the relative densities between the edges inside of the communities with respect to the outside edges. This algorithm is not optimal to be used when considering all possible iterations, thus a heuristic approach is performed. Then, the dendrogram is cut in the place of the highest partition, to obtain the highest modularity of the split.
@@ -374,16 +368,27 @@ def get_subgraph_by_attribute(graph, attribute, value):
 
 marvel_graph = get_subgraph_by_attribute(hero_undir, 'universe', 'marvel')
 marvel_communities = find_communities_from(marvel_graph)
+marvel_graph = set_community_attribute(marvel_graph, marvel_communities)
 
 # %% [markdown]
 # ### Plot the distribution of community sizes.
 
 
 def plot_community_distribution(universe, communities):
+    """
+    Plot the distribution of the communities in chosen universe.
+    """
+
     data = [value for _, value in communities.items()]
     title = f'The {universe} communities size distribution'
     caption = f'The histogram is representing the number of members assigned to each community from the {universe} community.'
-    barchart_distributions(data, title, caption, 'Communities', 'Count')
+    values, bins = np.histogram(data, 10)
+    plt.bar(bins[:-1], values, width=0.5)
+    plt.title(title)
+    plt.xlabel('Bin')
+    plt.ylabel('Count')
+    plt.grid()
+    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
     plt.show()
 
 # %% [markdown]
@@ -490,10 +495,10 @@ tf_idf = calculate_tf_idf(tokenized_texts)
 
 # The approach is the following:
 # * the documents in each community are concatenated,
-# * the text is tokenized, punctuation and stopword ares removed, lowercase is set, and lemmatization takes place,
+# * the text is tokenized, punctuation and stopwords are removed, lowercase is set, and lemmatization takes place,
 # * then the `tf` is calculated for each word in a community documents,
 # * each word in `tf` is checked in other documents and idf is calculated,
-# * each word weight is calulated.
+# * each word weight is calculated.
 
 # %% [markdown]
 # ### Create a word-cloud displaying the most important words in each community (according to TF-IDF). Comment on your results (do they make sense according to what you know about the superhero characters in those communities?)
@@ -511,7 +516,7 @@ def create_texts_from_list(word_weights):
     return ' '.join(text)
 
 
-def create_communitites_wordclouds(tf_idf):
+def create_communities_wordclouds(tf_idf):
     for index in tf_idf.keys():
         text = create_texts_from_list(tf_idf[index])
         wordcloud = WordCloud(max_font_size=40, collocations=False).generate(text)
@@ -521,11 +526,11 @@ def create_communitites_wordclouds(tf_idf):
         plt.show()
 
 
-create_communitites_wordclouds(tf_idf)
+create_communities_wordclouds(tf_idf)
 
 # %% [markdown]
 # > ### Answer:
-# The word clouds are showing the community around X-Men and Spiderman, so this makes sense.
+# The word clouds are showing the community around e.g. Spider-Man and X-Men:
 # * For Spider-Man, the following words occur – Parker, Jameson, America, Amazing ("The Amazing Spider-Man"), all of them are connected with this sub-universe,
 # * For X-Men there are words like Wolverine, Logan, ability, mutant, which also makes sense.
 
@@ -540,43 +545,112 @@ create_communitites_wordclouds(tf_idf)
 
 # %% [markdown]
 # ### Calculate and store sentiment for every single page.
-# ### TODO: CODE
+
+def label_community_nodes(graph):
+    communities = [graph.nodes[hero]['community'] for hero in graph.nodes()]
+    communities = set(communities)
+
+    for community in communities:
+        subgraph = [hero for hero in graph.nodes() if graph.nodes[hero]['community'] == community]
+        subgraph = graph.subgraph(subgraph)
+        names = sorted(subgraph.degree, key=lambda x: x[1], reverse=True)[:3]
+        names = '-'.join([name[0] for name in names])
+        nx.set_node_attributes(subgraph, names, 'community_name')
+
+    return graph
+
+
+def calculate_pages_sentiment(graph, universe):
+    sentiment_url = 'https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0026752.s001&type=supplementary'
+    sentiment_values = pd.read_csv(sentiment_url, skiprows=3, delimiter='\t')[['word', 'happiness_average']]
+
+    for hero in tqdm(graph.nodes()):
+        try:
+            with io.open(f'{universe}/{hero}.txt', 'r', encoding='utf8') as f:
+                page_content = f.read()
+        except FileNotFoundError:
+            continue
+
+        text = tokenize_text(page_content)
+        text = FreqDist(text)
+        sentiment = pd.DataFrame.from_dict(text, orient='index').reset_index()
+        sentiment.columns = ['word', 'count']
+        sentiment = sentiment.merge(sentiment_values, on=['word'])
+        if sentiment.empty:
+            continue
+        sentiment['mean'] = (sentiment['happiness_average'] * sentiment['count']).sum() / sentiment['count'].sum()
+        graph.nodes[hero]['sentiment'] = sentiment['mean'].mean()
+
+    return graph
+
+
+marvel_graph = label_community_nodes(marvel_graph)
+marvel_graph = calculate_pages_sentiment(marvel_graph, 'marvel')
+
 # %% [markdown]
 # > ### Answer:
 # > ### TODO
 
 # %% [markdown]
 # ### Create a histogram of all character's associated page-sentiments.
-# ### TODO: CODE
+
+
+def plot_sentiment_distribution(graph):
+    sentiments = nx.get_node_attributes(graph, 'sentiment')
+    title = f'The sentiment values distribution'
+    caption = f'The histogram is representing the distribution of sentiment amongst the characters.'
+    values, bins = np.histogram([value for value in sentiments.values() if value is not np.nan], 10)
+    plt.bar(bins[:-1], values, width=0.08)
+    plt.title(title)
+    plt.xlabel('Bin')
+    plt.ylabel('Count')
+    plt.grid()
+    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+    plt.show()
+
+    plt.bar(bins[:-1], values, width=0.08)
+    plt.show()
+
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+
+plot_sentiment_distribution(marvel_graph)
 
 # %% [markdown]
 # ### What are the 10 characters with happiest and saddest pages?
-# ### TODO: CODE
+
+sentiments_df = pd.DataFrame.from_dict(dict(marvel_graph.nodes(data=True)), orient='index')
+sentiments_df = sentiments_df.dropna(subset=['sentiment'])
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+
+# Saddest:
+print(sentiments_df.sort_values(by='sentiment', ascending=True).head(10))
+
+# Happiest
+print(sentiments_df.sort_values(by='sentiment', ascending=False).head(10))
 
 # %% [markdown]
 # ### What are the three happiest communities?
-# ### TODO: CODE
+sentiments_df_agg = sentiments_df.groupby('community_name').mean()
+sentiments_df_agg = sentiments_df_agg.drop(['community'], axis=1)
+
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+
+print(sentiments_df_agg.sort_values(by='sentiment', ascending=True).head(3))
 
 # %% [markdown]
 # ### What are the three saddest communities?
-# ### TODO: CODE
+
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+
+print(sentiments_df_agg.sort_values(by='sentiment', ascending=False).head(3))
 
 # %% [markdown]
 # ### Do these results confirm what you can learn about each community by skimming the wikipedia pages?
-# ### TODO: CODE
+
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
-# %%
+# The pages for three mostly connected characters from community name are quite short, comparing to the saddest ones. It may be caused by the amount of text and detailed description of the characters, episodes, situations. Low sentiment is generated by words like 'kill', 'fight', and those are more frequent in longer pages. Moreover, the names of happiest characters (referenced by happiest pages) are visible in a community name (the same for saddest ones), thus it is a confirmation, that the sentiment was accurate for those.
