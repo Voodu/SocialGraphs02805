@@ -3,6 +3,9 @@ import io
 import json
 import re
 import string
+import glob
+import math
+import pickle
 from urllib.parse import quote
 from urllib.request import urlopen
 
@@ -17,6 +20,7 @@ from wordcloud import WordCloud
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from nltk import FreqDist
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -309,6 +313,92 @@ plt.show()
 # # Exercise 2: Create your own version of the TF-TR word-clouds (from lecture 7). For this exercise we assume you know how to download and clean text from the wiki-pages.
 # Here's what you need to do:
 # ### That's it, really. The title says it all. Create your own version of the TF-TR word-clouds. Explain your process and comment on your results.
+# %%
+def tokenize_text(text, remove_wikisyntax=False):
+    '''
+    Parsing given text: removing punctuation, creating tokens,
+    setting to lowercase, removing stopwords, lemmatizing.
+    Optionally remove wikisyntax, i.e. [[]], {{}}, <>
+    '''
+    if remove_wikisyntax:
+        text = re.sub(r'\{\{.*?\}\}', '', text)
+        text = re.sub(r'\[\[.*?\]\]', '', text)
+        text = re.sub(r'\<.*?\>', '', text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    tokens = word_tokenize(text)
+    tokens = [token.lower() for token in tokens]
+    tokens = [token for token in tokens if token not in stopwords.words('english')]
+
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(token) for token in tokens]
+
+    return tokens
+
+def get_tf_list(universe):
+    '''
+    Returns token frequency list for the given universe name
+    '''
+    try:
+        return pickle.load(open(f'tf_{universe}.p', 'rb'))
+    except Exception:
+        pass
+    tf = {}
+    for filename in glob.glob(f'{universe}/*.txt'):
+        with io.open(filename, 'r', encoding='utf8') as f:
+            tokens = tokenize_text(f.read())
+            for word, count in FreqDist(tokens).items():
+                tf[word] = tf.setdefault(word, 0) + count
+    return tf
+
+def get_tr_tf_list(tf_main, tf_other):
+    '''
+    Returns TF-TR list
+    '''
+    c = 1
+    tf_weighted = {}
+    for word, count in tf_main.items():
+        weight = int((count)/(tf_other.get(word, 0) + c))
+        tf_weighted[word] = count * weight
+    return tf_weighted
+
+def create_global_wordcloud(text):
+    '''
+    Create a wordcloud based on a provided text.
+    '''
+    wordcloud = WordCloud(
+        max_font_size=40,
+        collocations=False,
+        background_color='white',
+        ).generate(text)
+    plt.figure()
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()
+
+def create_texts_from_list(word_weights):
+    '''
+    From the dict {word: weight} create a number of words depending on
+    the weight - weight is rounded up to int.
+    'text': 1.75 -> ['text', 'text']
+    '''
+    text = []
+    for word, weight in word_weights.items():
+        text.append(f'{word} ' * math.ceil(weight))
+    return ' '.join(text)
+
+# Create simple token-frequency lists
+tf = {}
+for u in universes:
+    tf[u] = get_tf_list(u)
+# Calculate weighted TF-TR list
+tf_tr = {
+    'marvel': get_tr_tf_list(tf['marvel'], tf['dc']),
+    'dc': get_tr_tf_list(tf['dc'], tf['marvel'])
+}
+# Build strings and create wordclouds out of them
+for u in universes:
+    s = create_texts_from_list(tf_tr[u])
+    create_global_wordcloud(s)
 # %% [markdown]
 # > ### Answer:
 # > ### TODO
