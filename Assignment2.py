@@ -1,6 +1,8 @@
 #%%
 import io
 import json
+import math
+import random
 import re
 import string
 from urllib.parse import quote
@@ -13,10 +15,14 @@ import nltk
 import numpy as np
 import pandas as pd
 from fa2 import ForceAtlas2
-from wordcloud import WordCloud
+from nltk import FreqDist
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from tqdm import tqdm
+from wordcloud import WordCloud
+
+random.seed(42)
 
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -419,43 +425,109 @@ def tokenize_text(text):
     return tokens
 
 
-def tokenize_texts(heroes, universe):
+def invert_dict(d):
+    """
+    Helper function for inverting the dict structure to dict of lists.
+    """
+    inverse = {}
+    for key, item in d.items():
+        if item not in inverse:
+            inverse[item] = [key]
+        else:
+            inverse[item].append(key)
+    return inverse
+
+
+def tokenize_texts_for_communities(communities, universe):
+    """
+    Concatenate the texts in each community and tokenize them.
+    """
     texts = {}
-    for hero in heroes:
-        try:
-            with io.open(f'{universe}/{hero}.txt', 'r', encoding='utf8') as f:
-                page_content = f.read()
-                page_content = tokenize_text(page_content)
-                texts[hero] = page_content
-        except FileNotFoundError:
-            pass
+    communities_inv = invert_dict(communities)
+    for community, heroes in communities_inv.items():
+        community_text = ''
+        for hero in heroes:
+            try:
+                with io.open(f'{universe}/{hero}.txt', 'r', encoding='utf8') as f:
+                    page_content = f.read()
+                    community_text = f'{community_text}\n{page_content}'
+            except FileNotFoundError:
+                pass
+        community_text = tokenize_text(community_text)
+        texts[community] = community_text
 
     return texts
 
 
-biggest_communities = get_biggest_communities(marvel_communities, 6)
-tokenized_texts = tokenize_texts(biggest_communities.keys(), 'marvel')
+def calculate_tf_idf(dict_texts):
+    """Calculate tf-idf for each word in communities."""
+    tf_idf_communities = {}
+    for index, current_text in tqdm(dict_texts.items()):
+        tf_idf = FreqDist(current_text)
+        other_texts = {key: dict_texts[key] for key in dict_texts.keys() if key != index}
+
+        for word in tqdm(tf_idf.keys()):
+            counter = 0
+            for _, other_text in other_texts.items():
+                if word in other_text:
+                    counter += 1
+            tf_idf[word] = tf_idf[word] * (math.log(len(dict_texts.keys()) / (counter + 1), 10) + 1)
+
+        tf_idf_communities[index] = tf_idf
+
+    return tf_idf_communities
+
+
+biggest_communities = get_biggest_communities(marvel_communities, 5)
+tokenized_texts = tokenize_texts_for_communities(biggest_communities, 'marvel')
+tf_idf = calculate_tf_idf(tokenized_texts)
+
+
 
 # %% [markdown]
 # > ### Answer:
-# The logarithmic function was chosen because of its slow rising curve. The weights in tf-idf filter out the common terms, hence the value for base defines the "speed" of filtering out those terms. 
+# The following formula was used: $tf(t, d) * idf(t, D) = f_{t, d} * (log(N / 1+n_t) + 1)$. The smooth logarithmic function was chosen because of its slow descending curve. The weights in tf-idf filter out the common terms, hence the value for base defines the "speed" of filtering out those terms.
+
+# The approach is the following:
+# * the documents in each community are concatenated,
+# * the text is tokenized, punctuation and stopword ares removed, lowercase is set, and lemmatization takes place,
+# * then the `tf` is calculated for each word in a community documents,
+# * each word in `tf` is checked in other documents and idf is calculated,
+# * each word weight is calulated.
 
 # %% [markdown]
 # ### Create a word-cloud displaying the most important words in each community (according to TF-IDF). Comment on your results (do they make sense according to what you know about the superhero characters in those communities?)
 
 
-def create_wordcloud(text):
+def create_texts_from_list(word_weights):
     """
-    Create a wordcloud based on a provided text.
+    From the dict {word: weight} create a number of words depending on
+    the weight - weight is rounded up to int.
+    'text': 1.75 -> ['text', 'text']
     """
-    wordcloud = WordCloud(max_font_size=40).generate(text)
-    plt.figure()
-    plt.imshow(wordcloud, interpolation="bilinear")
-    plt.axis("off")
-    plt.show()
+    text = []
+    for word, weight in word_weights.items():
+        text.append(f'{word} ' * math.ceil(weight))
+    return ' '.join(text)
+
+
+def create_communitites_wordclouds(tf_idf):
+    for index in tf_idf.keys():
+        text = create_texts_from_list(tf_idf[index])
+        wordcloud = WordCloud(max_font_size=40, collocations=False).generate(text)
+        plt.figure()
+        plt.imshow(wordcloud, interpolation="bilinear")
+        plt.axis("off")
+        plt.show()
+
+
+create_communitites_wordclouds(tf_idf)
+
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# The word clouds are showing the community around X-Men and Spiderman, so this makes sense.
+# * For Spider-Man, the following words occur – Parker, Jameson, America, Amazing ("The Amazing Spider-Man"), all of them are connected with this sub-universe,
+# * For X-Men there are words like Wolverine, Logan, ability, mutant, which also makes sense.
 
 # %% [markdown]
 # # Exercise 4: Analyze the sentiment of the communities (lecture 8). Here, we assume that you've successfully identified communities. Unlike above - we work all communities. It's still OK to work with data from a single universe. More tips & tricks can be found, if you take a look at Lecture 8's exercises.
