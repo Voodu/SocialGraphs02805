@@ -19,7 +19,7 @@ from nltk import FreqDist
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 from wordcloud import WordCloud
 
 random.seed(42)
