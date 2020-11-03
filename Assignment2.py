@@ -351,7 +351,7 @@ def get_tf_list(universe):
     tf = {}
     for filename in glob.glob(f'{universe}/*.txt'):
         with io.open(filename, 'r', encoding='utf8') as f:
-            tokens = tokenize_text(f.read())
+            tokens = tokenize_text(f.read(), True)
             for word, count in FreqDist(tokens).items():
                 tf[word] = tf.setdefault(word, 0) + count
     pickle.dump(tf, io.open(f'tf_{universe}.p', 'wb'))
