@@ -795,6 +795,7 @@ sentiments_df_agg = sentiments_df_agg.drop(['community'], axis=1)
 #  > ### Answer:
 
 # %%
+sentiments_df_agg.sort_values(by='sentiment', ascending=False).head(3)
 
 # %% [markdown]
 #  ### What are the three saddest communities?
@@ -802,6 +803,7 @@ sentiments_df_agg = sentiments_df_agg.drop(['community'], axis=1)
 #  > ### Answer:
 
 # %%
+sentiments_df_agg.sort_values(by='sentiment', ascending=True).head(3)
 
 # %% [markdown]
 #  ### Do these results confirm what you can learn about each community by skimming the wikipedia pages?
