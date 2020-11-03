@@ -1,13 +1,12 @@
 # %%
+import glob
 import io
 import json
 import math
+import pickle
 import random
 import re
 import string
-import glob
-import math
-import pickle
 from urllib.parse import quote
 from urllib.request import urlopen
 
@@ -24,7 +23,6 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from tqdm.notebook import tqdm
 from wordcloud import WordCloud
-from nltk import FreqDist
 
 random.seed(42)
 np.random.seed(42)
@@ -51,7 +49,7 @@ content = 'prop=revisions&rvprop=content'
 dataformat = 'format=json'
 formatversion = 'formatversion=2'
 query_base = f'{baseurl}{action}&{content}&{dataformat}&{formatversion}&titles='
-
+wikilink_re = re.compile(r'\[\[(.*?)\]\]')
 
 # %%
 # Functions for getting and preparing the data
@@ -70,6 +68,7 @@ def prepare_data(df):
     df['WikiLink_url'] = df['WikiLink'].str.replace(' ', '_')
     return df
 
+
 def get_preprocessed_csv_data(urls, universes):
     '''
     Returns dictionary with:\n
@@ -78,25 +77,29 @@ def get_preprocessed_csv_data(urls, universes):
     '''
     data = {}
     for i, univ in enumerate(universes):
-        data[univ] = pd.read_csv(urls[i], sep='|', index_col=0, header=0, names=['CharacterName', 'WikiLink'])
+        data[univ] = pd.read_csv(urls[i], sep='|', index_col=0, header=0,
+                                 names=['CharacterName', 'WikiLink'])
         data[univ] = prepare_data(data[univ])
     return data
+
 
 def get_wiki_page(title):
     '''
     Returns content of the wikipage with specified title or None if it does not exist
     '''
-    query = f'{query_base}{quote(title)}' # quote escapes weird Unicode characters
+    query = f'{query_base}{quote(title)}'  # quote escapes weird Unicode characters
     wikijson = json.loads(urlopen(query).read())
     try:
         return wikijson['query']['pages'][0]['revisions'][0]['content']
     except Exception:
         return None
 
+
 def save_pages_from_df(df, dir='output'):
     '''
     Fetches all the wikipages from the dataframe and stores them as text files in the specified directory
     '''
+
     def create_file_from_wiki(row):
         filename = row['CharacterName']
         page = get_wiki_page(row['WikiLink_url'])
@@ -105,24 +108,25 @@ def save_pages_from_df(df, dir='output'):
             return
         with io.open(f'{dir}/{filename}.txt', 'w', encoding='utf8') as f:
             f.write(page)
+
     df.apply(create_file_from_wiki, axis=1)
 
-wikilink_re = re.compile(r'\[\[(.*?)\]\]')
+
 def get_wikilinks(text):
     '''
     Return all wikilinks in a given text
     '''
     wikilinks = set()
-    for l in wikilink_re.finditer(text):
-        wikilinks.add(l[1].split('|')[0])
+    for link in wikilink_re.finditer(text):
+        wikilinks.add(link[1].split('|')[0])
     return wikilinks
+
 
 def filter_hero_links(wikilinks, hero_wikilinks):
     '''
     Returns intersection between wikilinks and hero wikilinks
     '''
     return set(wikilinks).intersection(set(hero_wikilinks))
-
 
 # %%
 # Functions for graph building
@@ -132,12 +136,14 @@ def add_heroes_to_graph(heroes, universe):
     '''
     hero_graph.add_nodes_from(heroes, universe=universe)
 
+
 def add_edges_to_graph(source, nodes):
     '''
     Connects given source to all the nodes in the hero graph
     '''
     for node in nodes:
         hero_graph.add_edge(source, node)
+
 
 def update_graph_with_hero(hero, links, universe):
     '''
@@ -150,12 +156,13 @@ def update_graph_with_hero(hero, links, universe):
         add_heroes_to_graph(linked_heroes, univ)
         add_edges_to_graph(hero, linked_heroes)
 
+
 def update_graph(row, universe):
     '''
     Updates hero graph with information from a row.
     Determines proper nodes & connections from corresponding text file.
     '''
-    filename, current_hero  = row['CharacterName'], row['WikiLink']
+    filename, current_hero = row['CharacterName'], row['WikiLink']
     try:
         with io.open(f'{universe}/{filename}.txt', 'r', encoding='utf8') as f:
             page_content = f.read()
@@ -164,18 +171,19 @@ def update_graph(row, universe):
     except Exception:
         pass
 
+
 def remove_isolates(graph):
     '''
     Removes isolated nodes from the graph
     '''
     graph.remove_nodes_from(list(nx.isolates(graph)))
 
+
 def get_gcc(graph):
     '''
     Return subgraph with Giant Connected Component
     '''
     return graph.subgraph(sorted(nx.weakly_connected_components(graph), key=len, reverse=True)[0])
-
 
 # %%
 # Get data & build the hero graph for exercises
@@ -215,6 +223,7 @@ def count_cross_universe_links(node, graph):
     universe = node[1]['universe']
     return np.sum((1 if graph.nodes[n]['universe'] != universe else 0 for n in graph.neighbors(node[0])))
 
+
 total_links = np.sum((count_cross_universe_links(n, hero_graph) for n in hero_graph.nodes(data=True)))
 
 print('Number of cross-universe links', total_links)
@@ -236,6 +245,7 @@ def report_heroes(degrees, dir):
     for h in top:
         print(f'{h[0]: <35}{h[1]}')
 
+
 report_heroes(hero_graph.in_degree(), 'entering')
 print()
 report_heroes(hero_graph.out_degree(), 'exiting')
@@ -252,6 +262,7 @@ report_heroes(hero_graph.out_degree(), 'exiting')
 gcc_in_degrees = [degree for _, degree in hero_graph.in_degree()]
 gcc_out_degrees = [degree for _, degree in hero_graph.out_degree()]
 
+
 def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=111):
     '''
     Wrapper around various pyplot configuration options
@@ -265,6 +276,7 @@ def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=1
     plt.ylabel(ylabel)
     plt.grid()
     plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+
 
 plt.figure(figsize=(14, 6))
 caption = 'Figure 1. Histograms showing distributions of node degrees in\ngraph visualizing connections between Wikipedia pages of Marvel and DC heroes.'
@@ -289,7 +301,7 @@ gcc_degrees = [degree for _, degree in hero_graph.degree()]
 plt.figure(figsize=(14, 6))
 caption = 'Figure 2. Comparison between node degree distributions of random network and hero network.\n'
 title = f'Degree distribution in Erdös-Renyi network\nN={size}, p={p}'
-barchart_distributions(random_degrees, title, caption,' Node degree', 'Count', 121)
+barchart_distributions(random_degrees, title, caption, ' Node degree', 'Count', 121)
 title = f'Degree distribution in GCC of Marvel & DC hero graph'
 barchart_distributions(gcc_degrees, title, caption, 'Node degree', 'Count', 122)
 plt.show()
@@ -315,6 +327,7 @@ def get_node_color_map(graph):
         color_map.append('red' if node[1]['universe'] == 'marvel' else 'black')
     return color_map
 
+
 def get_node_size_map(graph):
     '''
     Returns size map taking node degree into account
@@ -322,7 +335,8 @@ def get_node_size_map(graph):
     degrees = dict(graph.degree)
     return [v for v in degrees.values()]
 
-def get_edge_color(graph, n1 ,n2):
+
+def get_edge_color(graph, n1, n2):
     '''
     Return edge color between two nodes
     '''
@@ -333,27 +347,29 @@ def get_edge_color(graph, n1 ,n2):
         return 'yellow'
     return 'green'
 
+
 def get_edge_color_map(graph):
     '''
     Returns edge color map taking universe into account
     '''
     return [get_edge_color(graph, n1, n2) for n1, n2 in graph.edges]
 
+
 # Create undirected graph, as it works better with Force Atlas 2
 hero_undir = hero_graph.to_undirected()
-plt.figure(figsize=(14,8))
+plt.figure(figsize=(14, 8))
 # Determine node positions using Force Atlas 2 and draw. Use default config.
 positions = ForceAtlas2().forceatlas2_networkx_layout(hero_undir, pos=None, iterations=500)
 nx.draw_networkx_nodes(
-            hero_undir,
-            positions,
-            node_size=get_node_size_map(hero_undir),
-            node_color=get_node_color_map(hero_undir))
+    hero_undir,
+    positions,
+    node_size=get_node_size_map(hero_undir),
+    node_color=get_node_color_map(hero_undir))
 nx.draw_networkx_edges(
-            hero_undir,
-            positions,
-            width=0.1,
-            edge_color=get_edge_color_map(hero_undir))
+    hero_undir,
+    positions,
+    width=0.1,
+    edge_color=get_edge_color_map(hero_undir))
 plt.axis('off')
 caption = '''
 Figure 3. Visual representation of the GCC of the hero graph.
@@ -393,6 +409,7 @@ def tokenize_text(text, remove_wikisyntax=False):
 
     return tokens
 
+
 def get_tf_list(universe):
     '''
     Returns token frequency list for the given universe name
@@ -411,6 +428,7 @@ def get_tf_list(universe):
     pickle.dump(tf, io.open(f'tf_{universe}.p', 'wb'))
     return tf
 
+
 def get_tr_tf_list(tf_main, tf_other):
     '''
     Returns TF-TR list
@@ -418,9 +436,10 @@ def get_tr_tf_list(tf_main, tf_other):
     c = 1
     tf_weighted = {}
     for word, count in tf_main.items():
-        weight = int((count)/(tf_other.get(word, 0) + c))
+        weight = int((count) / (tf_other.get(word, 0) + c))
         tf_weighted[word] = count * weight
     return tf_weighted
+
 
 def create_wordcloud(text):
     '''
@@ -430,11 +449,12 @@ def create_wordcloud(text):
         max_font_size=40,
         collocations=False,
         background_color='white',
-        ).generate(text)
+    ).generate(text)
     plt.figure()
     plt.imshow(wordcloud, interpolation="bilinear")
     plt.axis("off")
     plt.show()
+
 
 def create_texts_from_list(word_weights):
     '''
@@ -447,7 +467,6 @@ def create_texts_from_list(word_weights):
         text.append(f'{word} ' * math.ceil(weight))
     return ' '.join(text)
 
-
 # %%
 # Building the wordclouds
 # Create simple token-frequency lists
@@ -457,7 +476,7 @@ for u in universes:
 # Calculate weighted TF-TR list
 tf_tr = {
     'marvel': get_tr_tf_list(tf['marvel'], tf['dc']),
-    'dc': get_tr_tf_list(tf['dc'], tf['marvel'])
+    'dc'    : get_tr_tf_list(tf['dc'], tf['marvel'])
 }
 # Build strings and create wordclouds out of them
 for u in universes:
@@ -516,7 +535,7 @@ def get_subgraph_by_attribute(graph, attribute, value):
 
 def set_community_attribute(graph, attributes):
     '''
-    TODO
+    Function for setting the community attribute to the character node.
     '''
     for hero in graph.nodes():
         graph.nodes[hero]['community'] = attributes[hero]
@@ -530,7 +549,7 @@ def set_community_attribute(graph, attributes):
 #  ### How many communities did you find in total?
 # %% [markdown]
 #  > ### Answer:
-
+#  We have found 11 communities in our set.
 # %%
 marvel_graph = get_subgraph_by_attribute(hero_undir, 'universe', 'marvel')
 marvel_communities = find_communities_from(marvel_graph)
@@ -548,7 +567,7 @@ def plot_community_distribution(universe, communities):
     data = [value for _, value in communities.items()]
     title = f'The {universe} communities size distribution'
     caption = f'Figure 4. The histogram is representing the number of members\nassigned to each community from the {universe} community.'
-    values, bins = np.histogram(data, 10)
+    values, bins = np.histogram(data, 11)
     plt.bar(bins[:-1], values, width=0.5)
     plt.title(title)
     plt.xlabel('Bin')
@@ -559,7 +578,7 @@ def plot_community_distribution(universe, communities):
 
 # %% [markdown]
 #  > ### Answer:
-
+#   The plot representing the distribution of nodes in every community. The communities have different sizes, they are very small as well as very huge.
 # %%
 plot_community_distribution('Marvel', marvel_communities)
 
@@ -639,7 +658,8 @@ def calculate_tf_idf(dict_texts):
             for _, other_text in other_texts.items():
                 if word in other_text:
                     counter += 1
-            tf_idf[word] = tf_idf[word] * (math.log(len(dict_texts.keys()) / (counter + 1), 10) + 1)
+            tf_idf[word] = tf_idf[word] * (
+                        math.log(len(dict_texts.keys()) / (counter + 1), 10) + 1)
 
         tf_idf_communities[index] = tf_idf
 
@@ -650,10 +670,6 @@ def calculate_tf_idf(dict_texts):
 biggest_communities = get_biggest_communities(marvel_communities, 5)
 tokenized_texts = tokenize_texts_for_communities(biggest_communities, 'marvel')
 tf_idf = calculate_tf_idf(tokenized_texts)
-
-
-# %%
-
 
 # %% [markdown]
 #  > ### Answer:
@@ -681,11 +697,12 @@ create_communities_wordclouds(tf_idf)
 
 # %% [markdown]
 #  > ### Answer:
-#  The word clouds are showing the community around e.g. Spider-Man and X-Men:
-#  * For Spider-Man, the following words occur – Parker, Jameson, America, Amazing ("The Amazing Spider-Man"), all of them are connected with this sub-universe,
-#  * For X-Men there are words like Wolverine, Logan, ability, mutant, which also makes sense.
-#  * For Doctor Strange – on the plot there are words like Dormammu, Doctor, time, Mordo.
-#  * Avengers wordcloud shows the heroes from the Avengers group.
+#  The following wordclouds were created:
+#  * General wordcloud for the Marvel universe. There are some important characters mentioned in the whole universe,
+#  * For Spider-Man, the following words occur – Peter, Parker, Jameson, America, Amazing ("The Amazing Spider-Man"), all of them are connected with this sub-universe,
+#  * For X-Men there are words like Wolverine, Logan, ability, mutant, which also makes sense for this set of connected pages,
+#  * The next one is about Thor's universe – words like God, Asgard, Avenger seem to be important here,
+#  * The last one seem to show another common words for the entire Marvel universe.
 # %% [markdown]
 #  # Exercise 4: Analyze the sentiment of the communities (lecture 8). Here, we assume that you've successfully identified communities. Unlike above - we work all communities. It's still OK to work with data from a single universe. More tips & tricks can be found, if you take a look at Lecture 8's exercises.
 #  A couple of additional instructions you will need below;
@@ -700,7 +717,8 @@ create_communities_wordclouds(tf_idf)
 # %%
 def label_community_nodes(graph):
     '''
-    TODO
+    Labelling the character nodes with the community name consisting of
+    three characters with highest degree in the community.
     '''
     communities = [graph.nodes[hero]['community'] for hero in graph.nodes()]
     communities = set(communities)
@@ -717,7 +735,8 @@ def label_community_nodes(graph):
 
 def calculate_pages_sentiment(graph, universe):
     '''
-    TODO
+    Calculating the sentiment for each of the character page and setting
+    the value to the character node as an attribute.
     '''
     try:
         print(f'Loading {universe}_sent_graph.p')
@@ -725,7 +744,8 @@ def calculate_pages_sentiment(graph, universe):
     except:
         print('Loading failed. Recreating.')
     sentiment_url = 'https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0026752.s001&type=supplementary'
-    sentiment_values = pd.read_csv(sentiment_url, skiprows=3, delimiter='\t')[['word', 'happiness_average']]
+    sentiment_values = pd.read_csv(sentiment_url, skiprows=3, delimiter='\t')[
+        ['word', 'happiness_average']]
 
     for hero in tqdm(graph.nodes()):
         try:
@@ -741,31 +761,33 @@ def calculate_pages_sentiment(graph, universe):
         sentiment = sentiment.merge(sentiment_values, on=['word'])
         if sentiment.empty:
             continue
-        sentiment['mean'] = (sentiment['happiness_average'] * sentiment['count']).sum() / sentiment['count'].sum()
+        sentiment['mean'] = (sentiment['happiness_average'] * sentiment['count']).sum() / \
+                            sentiment['count'].sum()
         graph.nodes[hero]['sentiment'] = sentiment['mean'].mean()
 
     pickle.dump(graph, io.open('{universe}_sent_graph.p', 'wb'))
     return graph
 
-
+# %%
 marvel_graph = label_community_nodes(marvel_graph)
 marvel_graph = calculate_pages_sentiment(marvel_graph, 'marvel')
 
 # %% [markdown]
 #  > ### Answer:
-#  > ### TODO
+#  In this section the sentiment for each page was calculated as well as the scores were assigned to the character nodes. The character nodes were also flagged with an attribute representing three mostly connected characters in the community which the node belongs to.
 # %% [markdown]
 #  ### Create a histogram of all character's associated page-sentiments.
 
 # %%
 def plot_sentiment_distribution(graph):
     '''
-    TODO
+    Ploting the sentiment distribution amongst the characters' pages.
     '''
     sentiments = nx.get_node_attributes(graph, 'sentiment')
     title = f'The sentiment values distribution'
     caption = f'Figure 5. The histogram is representing the distribution\nof sentiment amongst the characters.'
-    values, bins = np.histogram([value for value in sentiments.values() if value is not np.nan], 10)
+    values, bins = np.histogram([value for value in sentiments.values() if value is not np.nan],
+                                10)
     plt.bar(bins[:-1], values, width=0.08)
     plt.title(title)
     plt.xlabel('Bin')
@@ -776,7 +798,7 @@ def plot_sentiment_distribution(graph):
 
 # %% [markdown]
 #  > ### Answer:
-
+#  The histogram shows that the data is normally distributed amongst the nodes. Moreover, the score of sentiment distribution is the highest at 5.5, which indicates that the average sentiment of pages is centered around that value.
 # %%
 plot_sentiment_distribution(marvel_graph)
 
@@ -826,4 +848,3 @@ sentiments_df_agg.sort_values(by='sentiment', ascending=True).head(3)
 # %% [markdown]
 #  > ### Answer:
 #  > The pages for three mostly connected characters from community name are quite short, comparing to the saddest ones. It may be caused by the amount of text and detailed description of the characters, episodes, situations. Low sentiment is generated by words like 'kill', 'fight', and those are more frequent in longer pages.
-
