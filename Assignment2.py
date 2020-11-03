@@ -354,6 +354,7 @@ def get_tf_list(universe):
             tokens = tokenize_text(f.read())
             for word, count in FreqDist(tokens).items():
                 tf[word] = tf.setdefault(word, 0) + count
+    pickle.dump(tf, io.open(f'tf_{universe}.p', 'wb'))
     return tf
 
 def get_tr_tf_list(tf_main, tf_other):
