@@ -515,6 +515,9 @@ def get_subgraph_by_attribute(graph, attribute, value):
 
 
 def set_community_attribute(graph, attributes):
+    '''
+    TODO
+    '''
     for hero in graph.nodes():
         graph.nodes[hero]['community'] = attributes[hero]
 
@@ -666,6 +669,9 @@ tf_idf = calculate_tf_idf(tokenized_texts)
 
 # %%
 def create_communities_wordclouds(tf_idf):
+    '''
+    Creates wordclouds based on provided TD-IDF
+    '''
     for index in tf_idf.keys():
         text = create_texts_from_list(tf_idf[index])
         create_wordcloud(text)
@@ -693,6 +699,9 @@ create_communities_wordclouds(tf_idf)
 
 # %%
 def label_community_nodes(graph):
+    '''
+    TODO
+    '''
     communities = [graph.nodes[hero]['community'] for hero in graph.nodes()]
     communities = set(communities)
 
@@ -707,6 +716,9 @@ def label_community_nodes(graph):
 
 
 def calculate_pages_sentiment(graph, universe):
+    '''
+    TODO
+    '''
     try:
         print(f'Loading {universe}_sent_graph.p')
         return pickle.load(io.open(f'{universe}_sent_graph.p', 'rb'))
@@ -747,6 +759,9 @@ marvel_graph = calculate_pages_sentiment(marvel_graph, 'marvel')
 
 # %%
 def plot_sentiment_distribution(graph):
+    '''
+    TODO
+    '''
     sentiments = nx.get_node_attributes(graph, 'sentiment')
     title = f'The sentiment values distribution'
     caption = f'Figure 5. The histogram is representing the distribution\nof sentiment amongst the characters.'
