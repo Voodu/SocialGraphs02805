@@ -398,9 +398,10 @@ def get_tf_list(universe):
     Returns token frequency list for the given universe name
     '''
     try:
+        print(f'Loading tf_{universe}.p')
         return pickle.load(open(f'tf_{universe}.p', 'rb'))
     except Exception:
-        pass
+        print('Loading failed. Recreating.')
     tf = {}
     for filename in glob.glob(f'{universe}/*.txt'):
         with io.open(filename, 'r', encoding='utf8') as f:
@@ -594,6 +595,11 @@ def tokenize_texts_for_communities(communities, universe):
     '''
     Concatenate the texts in each community and tokenize them.
     '''
+    try:
+        print(f'Loading {universe}_comm_tokens.p')
+        return pickle.load(io.open(f'{universe}_comm_tokens.p', 'rb'))
+    except Exception:
+        print(f'Loading failed. Recreating.')
     texts = {}
     communities_inv = invert_dict(communities)
     for community, heroes in communities_inv.items():
@@ -608,11 +614,17 @@ def tokenize_texts_for_communities(communities, universe):
         community_text = tokenize_text(community_text)
         texts[community] = community_text
 
+    pickle.dump(texts, io.open(f'{universe}_comm_tokens.p', 'wb'))
     return texts
 
 
 def calculate_tf_idf(dict_texts):
     '''Calculate tf-idf for each word in communities.'''
+    try:
+        print('Loading tf_idf.p')
+        return pickle.load(io.open('tf_idf.p', 'rb'))
+    except Exception:
+        print('Loading failed. Recreating')
     tf_idf_communities = {}
     for index, current_text in tqdm(dict_texts.items()):
         tf_idf = FreqDist(current_text)
@@ -627,6 +639,7 @@ def calculate_tf_idf(dict_texts):
 
         tf_idf_communities[index] = tf_idf
 
+    pickle.dump(tf_idf_communities, io.open('tf_idf.p', 'wb'))
     return tf_idf_communities
 
 
@@ -693,6 +706,11 @@ def label_community_nodes(graph):
 
 
 def calculate_pages_sentiment(graph, universe):
+    try:
+        print(f'Loading {universe}_sent_graph.p')
+        return pickle.load(io.open(f'{universe}_sent_graph.p', 'rb'))
+    except:
+        print('Loading failed. Recreating.')
     sentiment_url = 'https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0026752.s001&type=supplementary'
     sentiment_values = pd.read_csv(sentiment_url, skiprows=3, delimiter='\t')[['word', 'happiness_average']]
 
@@ -713,6 +731,7 @@ def calculate_pages_sentiment(graph, universe):
         sentiment['mean'] = (sentiment['happiness_average'] * sentiment['count']).sum() / sentiment['count'].sum()
         graph.nodes[hero]['sentiment'] = sentiment['mean'].mean()
 
+    pickle.dump(graph, io.open('{universe}_sent_graph.p', 'wb'))
     return graph
 
 
