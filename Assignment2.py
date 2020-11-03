@@ -27,6 +27,7 @@ from wordcloud import WordCloud
 from nltk import FreqDist
 
 random.seed(42)
+np.random.seed(42)
 
 nltk.download('punkt')
 nltk.download('stopwords')
