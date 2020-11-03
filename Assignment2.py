@@ -194,7 +194,7 @@ print('Number of nodes in GCC:', len(hero_graph.nodes))
 print('Number of links in GCC:', len(hero_graph.edges))
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# > ### There are 2356 nodes and 35751 links in giant connected component of the hero graph. 
 
 # %% [markdown]
 # ### What is the number of links connecting Marvel and DC? Explain in your own words what those links mean?
@@ -210,7 +210,7 @@ total_links = np.sum((count_cross_universe_links(n, hero_graph) for n in hero_gr
 print('Number of cross-universe links', total_links)
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# > ### There are 802 links between Marvel and DC. It may mean that, although these are 'rival' publishers, there is slight relationship between their characters. However, it is small, as only around 2 percent of the links are cross-universe.
 
 # %% [markdown]
 # ### Who are top 5 most connected characters? (Report results for in-degrees and out-degrees). Comment on your findings. Is this what you would have expected.
@@ -229,7 +229,7 @@ print()
 report_heroes(hero_graph.out_degree(), 'exiting')
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# > ### Top 5 heroes with highest in- and out-degree can be seen above. First of all, it is surprising, how big is the difference between number of entering and exiting links - the most linked-to character has 4x more links than the most linking-to character. Intuition may suggest that those numbers should be similar. Also, the difference between the lists is similar - theoretically the character with the most outgoing links should have high number of entering links, as it is obviously related to multiple other heroes. However, it is not the case, as top 5 for in- and out-degrees consists of completely different characters.
 
 # %% [markdown]
 # ### Plot the in and out-degree distributions.
@@ -262,8 +262,8 @@ barchart_distributions(gcc_out_degrees, title, caption, 'Node degree', 'Count', 
 plt.show()
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
-
+# > ### First of all, out-degrees have 4 several times smaller range of values (according to the previous exercise - 1-130 vs 1-520). They are more condensed and distribution changes slower than in in-degree - there are around 140 nodes with degree 1 (not 0, as isolated nodes were removed), but there are also slightly more than 120 nodes with degree around 10. In-degree changes rapidly from around 550 nodes with degree 1 to just around 150 with degree of approximately 10.
+# > ### The in-degree distribution may reach higher values because of the nature of the network - the articles about heroes on wikipedia were created according to Barabasi-Albert model, i.e. one article was added after another and could link only to the previously created articles, with the first one (then second, third etc.) being probably the most popular. Because of that, after several articles were created they were mostly linking to the several most popular, thus increasing their in-degree.
 # %% [markdown]
 # ### Compare the degree distribution to a random network with the same number of nodes and probability of connection $p$. Comment or your results.
 size, p = hero_graph.order(), 0.002
@@ -279,7 +279,7 @@ barchart_distributions(gcc_degrees, title, caption, 'Node degree', 'Count', 122)
 plt.show()
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# > ### Random network with N=2356, p=0.002 and hero network with the same number of nodes have very different node distributions. As hero network follows the power-law, there are many nodes with low degree and few with high degree creating 'hubs'. Random network follows normal distribution, so for mentioned N and p there are mostly nodes with 4 connections and the number of nodes decreases the further the degree from 4. 
 
 # %% [markdown]
 # ## Exercise 1b: Visualization (see lecture 5 for more hints)
@@ -347,7 +347,7 @@ plt.figtext(0.5, 0, caption, wrap=True, horizontalalignment='center', fontsize=1
 plt.show()
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# > ### The graph shows clear separation between two universes. On the other hand it is clear that they are somehow connected.
 
 # %% [markdown]
 # # Exercise 2: Create your own version of the TF-TR word-clouds (from lecture 7). For this exercise we assume you know how to download and clean text from the wiki-pages.
