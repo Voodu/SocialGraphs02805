@@ -5,6 +5,9 @@ import math
 import random
 import re
 import string
+import glob
+import math
+import pickle
 from urllib.parse import quote
 from urllib.request import urlopen
 
@@ -21,6 +24,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from tqdm.notebook import tqdm
 from wordcloud import WordCloud
+from nltk import FreqDist
 
 random.seed(42)
 
@@ -315,9 +319,98 @@ plt.show()
 # # Exercise 2: Create your own version of the TF-TR word-clouds (from lecture 7). For this exercise we assume you know how to download and clean text from the wiki-pages.
 # Here's what you need to do:
 # ### That's it, really. The title says it all. Create your own version of the TF-TR word-clouds. Explain your process and comment on your results.
+# %%
+def tokenize_text(text, remove_wikisyntax=False):
+    '''
+    Parsing given text: removing punctuation, creating tokens,
+    setting to lowercase, removing stopwords, lemmatizing.
+    Optionally remove wikisyntax, i.e. [[]], {{}}, <>
+    '''
+    if remove_wikisyntax:
+        text = re.sub(r'\{\{.*?\}\}', '', text)
+        text = re.sub(r'\[\[.*?\]\]', '', text)
+        text = re.sub(r'\<.*?\>', '', text)
+    text = text.translate(str.maketrans('', '', string.punctuation))
+    tokens = word_tokenize(text)
+    tokens = [token.lower() for token in tokens]
+    tokens = [token for token in tokens if token not in stopwords.words('english')]
+
+    lemmatizer = WordNetLemmatizer()
+    tokens = [lemmatizer.lemmatize(token) for token in tokens]
+
+    return tokens
+
+def get_tf_list(universe):
+    '''
+    Returns token frequency list for the given universe name
+    '''
+    try:
+        return pickle.load(open(f'tf_{universe}.p', 'rb'))
+    except Exception:
+        pass
+    tf = {}
+    for filename in glob.glob(f'{universe}/*.txt'):
+        with io.open(filename, 'r', encoding='utf8') as f:
+            tokens = tokenize_text(f.read(), True)
+            for word, count in FreqDist(tokens).items():
+                tf[word] = tf.setdefault(word, 0) + count
+    pickle.dump(tf, io.open(f'tf_{universe}.p', 'wb'))
+    return tf
+
+def get_tr_tf_list(tf_main, tf_other):
+    '''
+    Returns TF-TR list
+    '''
+    c = 1
+    tf_weighted = {}
+    for word, count in tf_main.items():
+        weight = int((count)/(tf_other.get(word, 0) + c))
+        tf_weighted[word] = count * weight
+    return tf_weighted
+
+def create_wordcloud(text):
+    '''
+    Create a wordcloud based on a provided text.
+    '''
+    wordcloud = WordCloud(
+        max_font_size=40,
+        collocations=False,
+        background_color='white',
+        ).generate(text)
+    plt.figure()
+    plt.imshow(wordcloud, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()
+
+def create_texts_from_list(word_weights):
+    '''
+    From the dict {word: weight} create a number of words depending on
+    the weight - weight is rounded up to int.
+    'text': 1.75 -> ['text', 'text']
+    '''
+    text = []
+    for word, weight in word_weights.items():
+        text.append(f'{word} ' * math.ceil(weight))
+    return ' '.join(text)
+
+# Create simple token-frequency lists
+tf = {}
+for u in universes:
+    tf[u] = get_tf_list(u)
+# Calculate weighted TF-TR list
+tf_tr = {
+    'marvel': get_tr_tf_list(tf['marvel'], tf['dc']),
+    'dc': get_tr_tf_list(tf['dc'], tf['marvel'])
+}
+# Build strings and create wordclouds out of them
+for u in universes:
+    s = create_texts_from_list(tf_tr[u])
+    create_wordcloud(s)
 # %% [markdown]
 # > ### Answer:
-# > ### TODO
+# > ### Above wordclouds clearly show the most unique words for the given universes. When it comes to Marvel, despite popularity of Avengers: Endgame, X-Men & related (Wolverine, Xavier, Magneto) seem to be more frequently mentioned on Wikipedia. However, Avengers, Hulk, Thanos or Thor are also very popular there. Quite surprising hero here is Deadpool, which is clearly visible visible, especially compared to Spiderman, which is definitely more popular in the 'real' life.
+# > ### In DC world, Superman and Batman are definitely very important characters. Also the Green Lantern (lantern, Sinestro) topic can be  easily noticed. Probably the most visible supervillain in that universe is Brainiac.
+# > ### More explanation regarding the creation process can be found in function docstrings.
 
 # %% [markdown]
 # # Exercise 3: Find communities and create associated TF-IDF word clouds (from lecture 7 and 8). In this exercise, we assume that you have been able to find communities in your network. It's OK to only work on a single universe in this one.
@@ -414,22 +507,6 @@ def get_biggest_communities(communities, amount):
     return {k: v for k, v in communities.items() if v in biggest_communities}
 
 
-def tokenize_text(text):
-    """
-    Parsing given text: removing punctuation, creating tokens,
-    setting to lowercase, removing stopwords, lemmatizing.
-    """
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    tokens = word_tokenize(text)
-    tokens = [token.lower() for token in tokens]
-    tokens = [token for token in tokens if token not in stopwords.words('english')]
-
-    lemmatizer = WordNetLemmatizer()
-    tokens = [lemmatizer.lemmatize(token) for token in tokens]
-
-    return tokens
-
-
 def invert_dict(d):
     """
     Helper function for inverting the dict structure to dict of lists.
@@ -502,28 +579,10 @@ tf_idf = calculate_tf_idf(tokenized_texts)
 
 # %% [markdown]
 # ### Create a word-cloud displaying the most important words in each community (according to TF-IDF). Comment on your results (do they make sense according to what you know about the superhero characters in those communities?)
-
-
-def create_texts_from_list(word_weights):
-    """
-    From the dict {word: weight} create a number of words depending on
-    the weight - weight is rounded up to int.
-    'text': 1.75 -> ['text', 'text']
-    """
-    text = []
-    for word, weight in word_weights.items():
-        text.append(f'{word} ' * math.ceil(weight))
-    return ' '.join(text)
-
-
 def create_communities_wordclouds(tf_idf):
     for index in tf_idf.keys():
         text = create_texts_from_list(tf_idf[index])
-        wordcloud = WordCloud(max_font_size=40, collocations=False).generate(text)
-        plt.figure()
-        plt.imshow(wordcloud, interpolation="bilinear")
-        plt.axis("off")
-        plt.show()
+        create_wordcloud(text)
 
 
 create_communities_wordclouds(tf_idf)
