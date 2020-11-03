@@ -455,9 +455,9 @@ for u in universes:
 
 
 def find_communities_from(graph):
-    """
+    '''
     Finding the communities, plotting them and printing the count.
-    """
+    '''
     partition = community.best_partition(graph)
     count = len(set(partition.values()))
 
@@ -467,7 +467,7 @@ def find_communities_from(graph):
 
 
 def get_subgraph_by_attribute(graph, attribute, value):
-    """Getting the subgraph basing on universe attribute"""
+    '''Getting the subgraph basing on universe attribute'''
 
     nodes = (
         node
@@ -502,9 +502,9 @@ marvel_graph = set_community_attribute(marvel_graph, marvel_communities)
 
 
 def plot_community_distribution(universe, communities):
-    """
+    '''
     Plot the distribution of the communities in chosen universe.
-    """
+    '''
 
     data = [value for _, value in communities.items()]
     title = f'The {universe} communities size distribution'
@@ -529,9 +529,9 @@ plot_community_distribution('Marvel', marvel_communities)
 
 
 def get_biggest_communities(communities, amount):
-    """
+    '''
     Return the nodes for given amount of biggest communities.
-    """
+    '''
 
     data = [value for _, value in communities.items()]
     vector = list(range(np.min(data), np.max(data) + 2))
@@ -542,9 +542,9 @@ def get_biggest_communities(communities, amount):
 
 
 def invert_dict(d):
-    """
+    '''
     Helper function for inverting the dict structure to dict of lists.
-    """
+    '''
     inverse = {}
     for key, item in d.items():
         if item not in inverse:
@@ -555,9 +555,9 @@ def invert_dict(d):
 
 
 def tokenize_texts_for_communities(communities, universe):
-    """
+    '''
     Concatenate the texts in each community and tokenize them.
-    """
+    '''
     texts = {}
     communities_inv = invert_dict(communities)
     for community, heroes in communities_inv.items():
@@ -576,7 +576,7 @@ def tokenize_texts_for_communities(communities, universe):
 
 
 def calculate_tf_idf(dict_texts):
-    """Calculate tf-idf for each word in communities."""
+    '''Calculate tf-idf for each word in communities.'''
     tf_idf_communities = {}
     for index, current_text in tqdm(dict_texts.items()):
         tf_idf = FreqDist(current_text)
