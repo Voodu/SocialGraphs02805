@@ -545,7 +545,7 @@ def plot_community_distribution(universe, communities):
 
     data = [value for _, value in communities.items()]
     title = f'The {universe} communities size distribution'
-    caption = f'The histogram is representing the number of members assigned to each community from the {universe} community.'
+    caption = f'Figure 4. The histogram is representing the number of members\nassigned to each community from the {universe} community.'
     values, bins = np.histogram(data, 10)
     plt.bar(bins[:-1], values, width=0.5)
     plt.title(title)
@@ -748,7 +748,7 @@ marvel_graph = calculate_pages_sentiment(marvel_graph, 'marvel')
 def plot_sentiment_distribution(graph):
     sentiments = nx.get_node_attributes(graph, 'sentiment')
     title = f'The sentiment values distribution'
-    caption = f'The histogram is representing the distribution of sentiment amongst the characters.'
+    caption = f'Figure 5. The histogram is representing the distribution\nof sentiment amongst the characters.'
     values, bins = np.histogram([value for value in sentiments.values() if value is not np.nan], 10)
     plt.bar(bins[:-1], values, width=0.08)
     plt.title(title)
