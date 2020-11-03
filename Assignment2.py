@@ -78,7 +78,9 @@ def get_preprocessed_csv_data(urls, universes):
     return data
 
 def get_wiki_page(title):
-    '''Returns content of the wikipage with specified title or None if it does not exist'''
+    '''
+    Returns content of the wikipage with specified title or None if it does not exist
+    '''
     query = f'{query_base}{quote(title)}' # quote escapes weird Unicode characters
     wikijson = json.loads(urlopen(query).read())
     try:
@@ -87,7 +89,9 @@ def get_wiki_page(title):
         return None
 
 def save_pages_from_df(df, dir='output'):
-    '''Fetches all the wikipages from the dataframe and stores them as text files in the specified directory'''
+    '''
+    Fetches all the wikipages from the dataframe and stores them as text files in the specified directory
+    '''
     def create_file_from_wiki(row):
         filename = row['CharacterName']
         page = get_wiki_page(row['WikiLink_url'])
@@ -100,29 +104,39 @@ def save_pages_from_df(df, dir='output'):
 
 wikilink_re = re.compile(r'\[\[(.*?)\]\]')
 def get_wikilinks(text):
-    '''Return all wikilinks in a given text'''
+    '''
+    Return all wikilinks in a given text
+    '''
     wikilinks = set()
     for l in wikilink_re.finditer(text):
         wikilinks.add(l[1].split('|')[0])
     return wikilinks
 
 def filter_hero_links(wikilinks, hero_wikilinks):
-    '''Returns intersection between wikilinks and hero wikilinks'''
+    '''
+    Returns intersection between wikilinks and hero wikilinks
+    '''
     return set(wikilinks).intersection(set(hero_wikilinks))
 
 #%%
 # Functions for graph building
 def add_heroes_to_graph(heroes, universe):
-    '''Adds hero nodes with specified universe attribute to the hero graph'''
+    '''
+    Adds hero nodes with specified universe attribute to the hero graph
+    '''
     hero_graph.add_nodes_from(heroes, universe=universe)
 
 def add_edges_to_graph(source, nodes):
-    '''Connects given source to all the nodes in the hero graph'''
+    '''
+    Connects given source to all the nodes in the hero graph
+    '''
     for node in nodes:
         hero_graph.add_edge(source, node)
 
 def update_graph_with_hero(hero, links, universe):
-    '''Updates hero graph with information about given hero and links.'''
+    '''
+    Updates hero graph with information about given hero and links.
+    '''
     hero_graph.add_node(hero, universe=universe)
     for univ in universes:
         univ_links = data[univ]['WikiLink']
@@ -131,23 +145,29 @@ def update_graph_with_hero(hero, links, universe):
         add_edges_to_graph(hero, linked_heroes)
 
 def update_graph(row, universe):
-    '''Updates hero graph with information from a row.
-    Determines proper nodes & connections from corresponding text file.'''
+    '''
+    Updates hero graph with information from a row.
+    Determines proper nodes & connections from corresponding text file.
+    '''
     filename, current_hero  = row['CharacterName'], row['WikiLink']
     try:
         with io.open(f'{universe}/{filename}.txt', 'r', encoding='utf8') as f:
             page_content = f.read()
             wikilinks = get_wikilinks(page_content)
-            update_graph_with_hero(current_hero, wikilinks, universe)
+        update_graph_with_hero(current_hero, wikilinks, universe)
     except Exception:
         pass
 
 def remove_isolates(graph):
-    '''Removes isolated nodes from the graph'''
+    '''
+    Removes isolated nodes from the graph
+    '''
     graph.remove_nodes_from(list(nx.isolates(graph)))
 
 def get_gcc(graph):
-    '''Return subgraph with Giant Connected Component'''
+    '''
+    Return subgraph with Giant Connected Component
+    '''
     return graph.subgraph(sorted(nx.weakly_connected_components(graph), key=len, reverse=True)[0])
 
 # %%
@@ -179,7 +199,9 @@ print('Number of links in GCC:', len(hero_graph.edges))
 # %% [markdown]
 # ### What is the number of links connecting Marvel and DC? Explain in your own words what those links mean?
 def count_cross_universe_links(node, graph):
-    '''Counts number of connections to other universe from a given node'''
+    '''
+    Counts number of connections to other universe from a given node
+    '''
     universe = node[1]['universe']
     return np.sum((1 if graph.nodes[n]['universe'] != universe else 0 for n in graph.neighbors(node[0])))
 
@@ -193,7 +215,9 @@ print('Number of cross-universe links', total_links)
 # %% [markdown]
 # ### Who are top 5 most connected characters? (Report results for in-degrees and out-degrees). Comment on your findings. Is this what you would have expected.
 def report_heroes(degrees, dir):
-    '''Prints information about 5 most connected heroes according to the edge directions'''
+    '''
+    Prints information about 5 most connected heroes according to the edge directions
+    '''
     top = sorted(degrees, key=lambda x: x[1], reverse=True)[:5]
     print(f'Top 5 connected heroes with {dir} links')
     print(f'{"name:": <35}{dir} links:')
@@ -216,7 +240,9 @@ gcc_in_degrees = [degree for _, degree in hero_graph.in_degree()]
 gcc_out_degrees = [degree for _, degree in hero_graph.out_degree()]
 
 def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=111):
-    '''Wrapper around various pyplot configuration options'''
+    '''
+    Wrapper around various pyplot configuration options
+    '''
     plt.subplot(subplot)
     vector = list(range(np.min(data), np.max(data) + 2))
     graph_values, graph_bins = np.histogram(data, bins=vector)
@@ -263,19 +289,25 @@ plt.show()
 # #### c) Whatever else you feel like.
 # #### d) If you can get it to work, get node positions based on the Force Atlas 2 algorithm
 def get_node_color_map(graph):
-    '''Returns node color map taking universe into account'''
+    '''
+    Returns node color map taking universe into account
+    '''
     color_map = []
     for node in graph.nodes(data=True):
         color_map.append('red' if node[1]['universe'] == 'marvel' else 'black')
     return color_map
 
 def get_node_size_map(graph):
-    '''Returns size map taking node degree into account'''
+    '''
+    Returns size map taking node degree into account
+    '''
     degrees = dict(graph.degree)
     return [v for v in degrees.values()]
 
 def get_edge_color(graph, n1 ,n2):
-    '''Return edge color between two nodes'''
+    '''
+    Return edge color between two nodes
+    '''
     univ1, univ2 = graph.nodes[n1]['universe'], graph.nodes[n2]['universe']
     if univ1 == univ2 == 'marvel':
         return 'blue'
@@ -284,7 +316,9 @@ def get_edge_color(graph, n1 ,n2):
     return 'green'
 
 def get_edge_color_map(graph):
-    '''Returns edge color map taking universe into account'''
+    '''
+    Returns edge color map taking universe into account
+    '''
     return [get_edge_color(graph, n1, n2) for n1, n2 in graph.edges]
 
 # Create undirected graph, as it works better with Force Atlas 2
