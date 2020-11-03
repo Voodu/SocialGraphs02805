@@ -368,7 +368,7 @@ def get_tr_tf_list(tf_main, tf_other):
         tf_weighted[word] = count * weight
     return tf_weighted
 
-def create_global_wordcloud(text):
+def create_wordcloud(text):
     '''
     Create a wordcloud based on a provided text.
     '''
@@ -405,7 +405,7 @@ tf_tr = {
 # Build strings and create wordclouds out of them
 for u in universes:
     s = create_texts_from_list(tf_tr[u])
-    create_global_wordcloud(s)
+    create_wordcloud(s)
 # %% [markdown]
 # > ### Answer:
 # > ### Above wordclouds clearly show the most unique words for the given universes. When it comes to Marvel, despite popularity of Avengers: Endgame, X-Men & related (Wolverine, Xavier, Magneto) seem to be more frequently mentioned on Wikipedia. However, Avengers, Hulk, Thanos or Thor are also very popular there. Quite surprising hero here is Deadpool, which is clearly visible visible, especially compared to Spiderman, which is definitely more popular in the 'real' life.
@@ -507,22 +507,6 @@ def get_biggest_communities(communities, amount):
     return {k: v for k, v in communities.items() if v in biggest_communities}
 
 
-def tokenize_text(text):
-    """
-    Parsing given text: removing punctuation, creating tokens,
-    setting to lowercase, removing stopwords, lemmatizing.
-    """
-    text = text.translate(str.maketrans('', '', string.punctuation))
-    tokens = word_tokenize(text)
-    tokens = [token.lower() for token in tokens]
-    tokens = [token for token in tokens if token not in stopwords.words('english')]
-
-    lemmatizer = WordNetLemmatizer()
-    tokens = [lemmatizer.lemmatize(token) for token in tokens]
-
-    return tokens
-
-
 def invert_dict(d):
     """
     Helper function for inverting the dict structure to dict of lists.
@@ -595,28 +579,10 @@ tf_idf = calculate_tf_idf(tokenized_texts)
 
 # %% [markdown]
 # ### Create a word-cloud displaying the most important words in each community (according to TF-IDF). Comment on your results (do they make sense according to what you know about the superhero characters in those communities?)
-
-
-def create_texts_from_list(word_weights):
-    """
-    From the dict {word: weight} create a number of words depending on
-    the weight - weight is rounded up to int.
-    'text': 1.75 -> ['text', 'text']
-    """
-    text = []
-    for word, weight in word_weights.items():
-        text.append(f'{word} ' * math.ceil(weight))
-    return ' '.join(text)
-
-
 def create_communities_wordclouds(tf_idf):
     for index in tf_idf.keys():
         text = create_texts_from_list(tf_idf[index])
-        wordcloud = WordCloud(max_font_size=40, collocations=False).generate(text)
-        plt.figure()
-        plt.imshow(wordcloud, interpolation="bilinear")
-        plt.axis("off")
-        plt.show()
+        create_wordcloud(text)
 
 
 create_communities_wordclouds(tf_idf)
