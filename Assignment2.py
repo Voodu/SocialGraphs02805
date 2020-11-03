@@ -194,7 +194,7 @@ print('Number of nodes in GCC:', len(hero_graph.nodes))
 print('Number of links in GCC:', len(hero_graph.edges))
 # %% [markdown]
 # > ### Answer:
-# > ### There are 2356 nodes and 35751 links in giant connected component of the hero graph. 
+# > There are 2356 nodes and 35751 links in giant connected component of the hero graph. 
 
 # %% [markdown]
 # ### What is the number of links connecting Marvel and DC? Explain in your own words what those links mean?
@@ -210,7 +210,7 @@ total_links = np.sum((count_cross_universe_links(n, hero_graph) for n in hero_gr
 print('Number of cross-universe links', total_links)
 # %% [markdown]
 # > ### Answer:
-# > ### There are 802 links between Marvel and DC. It may mean that, although these are 'rival' publishers, there is slight relationship between their characters. However, it is small, as only around 2 percent of the links are cross-universe.
+# > There are 802 links between Marvel and DC. It may mean that, although these are 'rival' publishers, there is slight relationship between their characters. However, it is small, as only around 2 percent of the links are cross-universe.
 
 # %% [markdown]
 # ### Who are top 5 most connected characters? (Report results for in-degrees and out-degrees). Comment on your findings. Is this what you would have expected.
@@ -229,7 +229,7 @@ print()
 report_heroes(hero_graph.out_degree(), 'exiting')
 # %% [markdown]
 # > ### Answer:
-# > ### Top 5 heroes with highest in- and out-degree can be seen above. First of all, it is surprising, how big is the difference between number of entering and exiting links - the most linked-to character has 4x more links than the most linking-to character. Intuition may suggest that those numbers should be similar. Also, the difference between the lists is similar - theoretically the character with the most outgoing links should have high number of entering links, as it is obviously related to multiple other heroes. However, it is not the case, as top 5 for in- and out-degrees consists of completely different characters.
+# > Top 5 heroes with highest in- and out-degree can be seen above. First of all, it is surprising, how big is the difference between number of entering and exiting links - the most linked-to character has 4x more links than the most linking-to character. Intuition may suggest that those numbers should be similar. Also, the difference between the lists is similar - theoretically the character with the most outgoing links should have high number of entering links, as it is obviously related to multiple other heroes. However, it is not the case, as top 5 for in- and out-degrees consists of completely different characters.
 
 # %% [markdown]
 # ### Plot the in and out-degree distributions.
@@ -262,8 +262,8 @@ barchart_distributions(gcc_out_degrees, title, caption, 'Node degree', 'Count', 
 plt.show()
 # %% [markdown]
 # > ### Answer:
-# > ### First of all, out-degrees have 4 several times smaller range of values (according to the previous exercise - 1-130 vs 1-520). They are more condensed and distribution changes slower than in in-degree - there are around 140 nodes with degree 1 (not 0, as isolated nodes were removed), but there are also slightly more than 120 nodes with degree around 10. In-degree changes rapidly from around 550 nodes with degree 1 to just around 150 with degree of approximately 10.
-# > ### The in-degree distribution may reach higher values because of the nature of the network - the articles about heroes on wikipedia were created according to Barabasi-Albert model, i.e. one article was added after another and could link only to the previously created articles, with the first one (then second, third etc.) being probably the most popular. Because of that, after several articles were created they were mostly linking to the several most popular, thus increasing their in-degree.
+# > First of all, out-degrees have 4 several times smaller range of values (according to the previous exercise - 1-130 vs 1-520). They are more condensed and distribution changes slower than in in-degree - there are around 140 nodes with degree 1 (not 0, as isolated nodes were removed), but there are also slightly more than 120 nodes with degree around 10. In-degree changes rapidly from around 550 nodes with degree 1 to just around 150 with degree of approximately 10.
+# > The in-degree distribution may reach higher values because of the nature of the network - the articles about heroes on wikipedia were created according to Barabasi-Albert model, i.e. one article was added after another and could link only to the previously created articles, with the first one (then second, third etc.) being probably the most popular. Because of that, after several articles were created they were mostly linking to the several most popular, thus increasing their in-degree.
 # %% [markdown]
 # ### Compare the degree distribution to a random network with the same number of nodes and probability of connection $p$. Comment or your results.
 size, p = hero_graph.order(), 0.002
@@ -279,7 +279,7 @@ barchart_distributions(gcc_degrees, title, caption, 'Node degree', 'Count', 122)
 plt.show()
 # %% [markdown]
 # > ### Answer:
-# > ### Random network with N=2356, p=0.002 and hero network with the same number of nodes have very different node distributions. As hero network follows the power-law, there are many nodes with low degree and few with high degree creating 'hubs'. Random network follows normal distribution, so for mentioned N and p there are mostly nodes with 4 connections and the number of nodes decreases the further the degree from 4. 
+# > Random network with N=2356, p=0.002 and hero network with the same number of nodes have very different node distributions. As hero network follows the power-law, there are many nodes with low degree and few with high degree creating 'hubs'. Random network follows normal distribution, so for mentioned N and p there are mostly nodes with 4 connections and the number of nodes decreases the further the degree from 4. 
 
 # %% [markdown]
 # ## Exercise 1b: Visualization (see lecture 5 for more hints)
@@ -347,7 +347,7 @@ plt.figtext(0.5, 0, caption, wrap=True, horizontalalignment='center', fontsize=1
 plt.show()
 # %% [markdown]
 # > ### Answer:
-# > ### The graph shows clear separation between two universes. On the other hand it is clear that they are somehow connected.
+# > The graph shows clear separation between two universes. On the other hand it is clear that they are somehow connected.
 
 # %% [markdown]
 # # Exercise 2: Create your own version of the TF-TR word-clouds (from lecture 7). For this exercise we assume you know how to download and clean text from the wiki-pages.
@@ -442,9 +442,9 @@ for u in universes:
     create_wordcloud(s)
 # %% [markdown]
 # > ### Answer:
-# > ### Above wordclouds clearly show the most unique words for the given universes. When it comes to Marvel, despite popularity of Avengers: Endgame, X-Men & related (Wolverine, Xavier, Magneto) seem to be more frequently mentioned on Wikipedia. However, Avengers, Hulk, Thanos or Thor are also very popular there. Quite surprising hero here is Deadpool, which is clearly visible visible, especially compared to Spiderman, which is definitely more popular in the 'real' life.
-# > ### In DC world, Superman and Batman are definitely very important characters. Also the Green Lantern (lantern, Sinestro) topic can be  easily noticed. Probably the most visible supervillain in that universe is Brainiac.
-# > ### More explanation regarding the creation process can be found in function docstrings.
+# > Above wordclouds clearly show the most unique words for the given universes. When it comes to Marvel, despite popularity of Avengers: Endgame, X-Men & related (Wolverine, Xavier, Magneto) seem to be more frequently mentioned on Wikipedia. However, Avengers, Hulk, Thanos or Thor are also very popular there. Quite surprising hero here is Deadpool, which is clearly visible visible, especially compared to Spiderman, which is definitely more popular in the 'real' life.
+# > In DC world, Superman and Batman are definitely very important characters. Also the Green Lantern (lantern, Sinestro) topic can be  easily noticed. Probably the most visible supervillain in that universe is Brainiac.
+# > More explanation regarding the creation process can be found in function docstrings.
 
 # %% [markdown]
 # # Exercise 3: Find communities and create associated TF-IDF word clouds (from lecture 7 and 8). In this exercise, we assume that you have been able to find communities in your network. It's OK to only work on a single universe in this one.
@@ -602,14 +602,14 @@ tf_idf = calculate_tf_idf(tokenized_texts)
 
 # %% [markdown]
 # > ### Answer:
-# The following formula was used: $tf(t, d) * idf(t, D) = f_{t, d} * (log(N / 1+n_t) + 1)$. The smooth logarithmic function was chosen because of its slow descending curve. The weights in tf-idf filter out the common terms, hence the value for base defines the "speed" of filtering out those terms.
+# > The following formula was used: $tf(t, d) * idf(t, D) = f_{t, d} * (log(N / 1+n_t) + 1)$. The smooth logarithmic function was chosen because of its slow descending curve. The weights in tf-idf filter out the common terms, hence the value for base defines the "speed" of filtering out those terms.
 
-# The approach is the following:
-# * the documents in each community are concatenated,
-# * the text is tokenized, punctuation and stopwords are removed, lowercase is set, and lemmatization takes place,
-# * then the `tf` is calculated for each word in a community documents,
-# * each word in `tf` is checked in other documents and idf is calculated,
-# * each word weight is calculated.
+# > The approach is the following:
+# > * the documents in each community are concatenated,
+# > * the text is tokenized, punctuation and stopwords are removed, lowercase is set, and lemmatization takes place,
+# > * then the `tf` is calculated for each word in a community documents,
+# > * each word in `tf` is checked in other documents and idf is calculated,
+# > * each word weight is calculated.
 
 # %% [markdown]
 # ### Create a word-cloud displaying the most important words in each community (according to TF-IDF). Comment on your results (do they make sense according to what you know about the superhero characters in those communities?)
@@ -640,7 +640,6 @@ create_communities_wordclouds(tf_idf)
 
 # %% [markdown]
 # ### Calculate and store sentiment for every single page.
-
 def label_community_nodes(graph):
     communities = [graph.nodes[hero]['community'] for hero in graph.nodes()]
     communities = set(communities)
@@ -681,15 +680,12 @@ def calculate_pages_sentiment(graph, universe):
 
 marvel_graph = label_community_nodes(marvel_graph)
 marvel_graph = calculate_pages_sentiment(marvel_graph, 'marvel')
-
 # %% [markdown]
 # > ### Answer:
 # > ### TODO
 
 # %% [markdown]
 # ### Create a histogram of all character's associated page-sentiments.
-
-
 def plot_sentiment_distribution(graph):
     sentiments = nx.get_node_attributes(graph, 'sentiment')
     title = f'The sentiment values distribution'
@@ -708,21 +704,18 @@ def plot_sentiment_distribution(graph):
 
 # %% [markdown]
 # > ### Answer:
-
 plot_sentiment_distribution(marvel_graph)
 
 # %% [markdown]
 # ### What are the 10 characters with happiest and saddest pages?
-
 sentiments_df = pd.DataFrame.from_dict(dict(marvel_graph.nodes(data=True)), orient='index')
 sentiments_df = sentiments_df.dropna(subset=['sentiment'])
 # %% [markdown]
 # > ### Answer:
-
-# Happiest
+# > Happiest:
 print(sentiments_df.sort_values(by='sentiment', ascending=False).head(10))
-
-# Saddest:
+# %% [markdown]
+# > Saddest:
 print(sentiments_df.sort_values(by='sentiment', ascending=True).head(10))
 
 # %% [markdown]
@@ -748,4 +741,4 @@ print(sentiments_df_agg.sort_values(by='sentiment', ascending=False).head(3))
 
 # %% [markdown]
 # > ### Answer:
-# The pages for three mostly connected characters from community name are quite short, comparing to the saddest ones. It may be caused by the amount of text and detailed description of the characters, episodes, situations. Low sentiment is generated by words like 'kill', 'fight', and those are more frequent in longer pages.
+# > The pages for three mostly connected characters from community name are quite short, comparing to the saddest ones. It may be caused by the amount of text and detailed description of the characters, episodes, situations. Low sentiment is generated by words like 'kill', 'fight', and those are more frequent in longer pages.
