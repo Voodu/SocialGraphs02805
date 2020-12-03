@@ -15,9 +15,11 @@ from wordcloud import WordCloud
 
 # %%
 characters = pd.read_csv('data/characters.csv', header=0, delimiter='\t')
-characters.head()
+
+# Extract names list from the data
 characters.name = characters.name.str.lower()
-names = list(characters.name)
+lotr_names = list(characters.name)
+characters.head()
 
 # %%
 def tokenize_text(text):
@@ -35,43 +37,64 @@ def tokenize_text(text):
 
     return tokens
 
-def get_chunks(list, size): 
+def get_chunks(list, chunk_size): 
 	'''Generates chunks from list'''
-	for i in range(0, len(list), size):  
-		yield list[i:i + size] 
+	for i in range(0, len(list), chunk_size):  
+		yield list[i:i + chunk_size] 
 
 # %%
-files = [
-	'book/part1.txt',
-	'book/part2.txt',
-	'book/part3.txt',
-	'movie/part1.txt',
-	'movie/part2.txt',
-	'movie/part3.txt'
+def build_graph(filepath, names, chunk_size=300):
+    '''
+    Builds graph of characters with given names from data in specified file.
+    Divides text in chunks of chunks_size and connects each character in that chunk.
+    Afterwards combines all chunk-graphs together and returns the resulting graph.
+    '''
+    graph = nx.Graph()
+    # Read text of file
+    with io.open(filepath, 'r', encoding='utf8') as f:
+        text = f.read()
+    tokens = tokenize_text(text)
+    # For each n-word chunk:
+    for chunk in get_chunks(tokens, chunk_size):
+        # Take each word
+        # If it exists in characters, add it to chunk_characters
+        chunk_characters = [word for word in chunk if word in names]
+        # Create complete chunk subgraph from chunk_characters 
+        subgraph = nx.complete_graph(chunk_characters)
+        # Combine global and chunk graph
+        graph = nx.compose(graph, subgraph)
+    
+    return graph
+
+filepaths = [
+	'data/book/part1.txt',
+	'data/book/part2.txt',
+	'data/book/part3.txt',
+	'data/movie/part1.txt',
+	'data/movie/part2.txt',
+	'data/movie/part3.txt'
 ]
-# Create empty undirected graph
-g = nx.Graph()
+# Create subgraph for every file
+subgraphs = []
+for filepath in filepaths:
+    subgraphs.append(build_graph(filepath, lotr_names))
 
-# For each file:
-for file in files[:]:
-	# Read text of file
-	with io.open(f'data/{file}', 'r', encoding='utf8') as f:
-		text = f.read()
-	tokens = tokenize_text(text)
-#	Create list with 300-word chunks
-# 	For each chunk:
-	for chunk in get_chunks(tokens, 300):
-#		Take each word
-#		If it exists in characters, add it to buffer
-		buffer = [word for word in chunk if word in names]
-# 		Create complete subgraph from buffer 
-		subgraph = nx.complete_graph(buffer)
-# 		Combine global and chunk graph nx.compose(A, B) 
-		g = nx.compose(g, subgraph)
+# Create graph from book connections
+books_graph = nx.Graph()
+for subgraph in subgraphs[:3]:
+    books_graph = nx.compose(books_graph, subgraph)
+
+# Create graph from movie connections
+movies_graph = nx.Graph()
+for subgraph in subgraphs[3:]:
+    movies_graph = nx.compose(movies_graph, subgraph)
+
+# Compose one big graph connecting all the books and movies
+lotr_graph = nx.compose(books_graph, movies_graph)
 
 # %%
-print("Nodes:", g.number_of_nodes())
-print("Edges:", g.number_of_edges())
+print("Nodes:", lotr_graph.number_of_nodes())
+print("Edges:", lotr_graph.number_of_edges())
 
 # %%
 def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=111):
@@ -86,12 +109,12 @@ def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=1
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid()
-    # plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
 
-degrees = [degree for _, degree in g.degree()]
+degrees = [degree for _, degree in lotr_graph.degree()]
 plt.figure(figsize=(14, 6))
 title = 'Degree distribution in LotR character graph'
-barchart_distributions(degrees, title, '', 'Node degree', 'Count')
+barchart_distributions(degrees, title, 'Figure 1. Distribution of degrees in LotR character graph.', 'Node degree', 'Count')
 plt.show()
 
 # %%
@@ -104,18 +127,17 @@ def get_node_size_map(graph):
 
 plt.figure(figsize=(14, 8))
 # Determine node positions using Force Atlas 2 and draw. Use default config.
-positions = ForceAtlas2().forceatlas2_networkx_layout(g, pos=None, iterations=500)
+positions = ForceAtlas2().forceatlas2_networkx_layout(lotr_graph, pos=None, iterations=500)
 nx.draw_networkx_nodes(
-    g,
+    lotr_graph,
     positions,
-    node_size=get_node_size_map(g))
+    node_size=get_node_size_map(lotr_graph))
 nx.draw_networkx_edges(
-    g,
+    lotr_graph,
     positions,
     width=0.1)
 plt.axis('off')
 plt.show()
-
 
 # %%
 def report_characters(degrees):
@@ -129,5 +151,5 @@ def report_characters(degrees):
         print(f'{h[0]: <35}{h[1]}')
 
 
-report_characters(g.degree())
+report_characters(lotr_graph.degree())
 # %%
