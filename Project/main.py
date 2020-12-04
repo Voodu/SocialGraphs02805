@@ -19,12 +19,12 @@ from wordcloud import WordCloud
 # %% [markdown]
 # # Lord of the Rings - analysis
 # In the project we would like to analyze text of three LotR books and movie scripts. Two main goals are to understand connections between characters and sentiment change over time in books and movies.
-# 
+#
 # Analysis will be performed over all 300-word chunks of text from book/script. Movie scripts are taken from https://www.imsdb.com/ and books are taken from http://ae-lib.org.ua/. Character information and names list are taken from LotR wiki: https://lotr.fandom.com/wiki
 
 # %% [markdown]
 # ## Preparing the data
-# After downloading the books and the scripts, a character list was needed. To get it, we combined https://lotr.fandom.com/wiki/Category:The_Lord_of_the_Rings_Characters list and sublists appearing in it. After cleaning the data, 174 characters remained in the final list. 
+# After downloading the books and the scripts, a character list was needed. To get it, we combined https://lotr.fandom.com/wiki/Category:The_Lord_of_the_Rings_Characters list and sublists appearing in it. After cleaning the data, 174 characters remained in the final list.
 #
 # The most common attribute on the wiki, which appeared on most of the pages, was character race. Therefore, it was added to each character information in the list.
 #
@@ -36,7 +36,8 @@ from wordcloud import WordCloud
 
 # %%
 # Just read the data from the cleaned CSV
-characters = pd.read_csv('data/characters.csv', header=0, delimiter='\t', index_col=0)
+characters = pd.read_csv('data/characters.csv',
+                         header=0, delimiter='\t', index_col=0)
 
 # %%
 # Enrich the data with race information
@@ -70,6 +71,7 @@ race_translations = {
 }
 races = set(race_translations.values())
 
+
 def get_race(row):
     '''
     Extracts race information from the wiki about the character
@@ -77,13 +79,14 @@ def get_race(row):
     page_html = requests.get(row.link).text
     soup = BeautifulSoup(page_html, 'html.parser')
     link = soup.select_one(race_selector)
-    if link is None: # sometimes it's 'Race' instead of 'race'
+    if link is None:  # sometimes it's 'Race' instead of 'race'
         link = soup.select_one(race_selector.replace('race', 'Race'))
     if link:
         race = race_translations[link['href'].split('/')[-1]]
     else:
         race = 'unknown'
     return race.lower()
+
 
 def enrich_with_race(df, pickle_path='characters_race.p'):
     '''
@@ -98,6 +101,7 @@ def enrich_with_race(df, pickle_path='characters_race.p'):
     df = df[['race', 'link']]
     pickle.dump(df, io.open(f'{pickle_path}', 'wb'))
     return df
+
 
 # Add column with race
 characters = enrich_with_race(characters)
@@ -123,11 +127,13 @@ characters.head()
 #    1. Return G and add it subgraphs list
 # 1. Combine subgraphs as needed, ex. create graph of all the books, movies or all the data sources
 #
-# 
+#
 # Every node of the graph is named after the character and holds its race as the attribute.
 
 # %%
 # Functions for text processing and graph building
+
+
 def tokenize_text(text):
     '''
     Parsing given text: removing punctuation, creating tokens,
@@ -136,17 +142,20 @@ def tokenize_text(text):
     text = text.translate(str.maketrans('', '', string.punctuation))
     tokens = word_tokenize(text)
     tokens = [token.lower() for token in tokens]
-    tokens = [token for token in tokens if token not in stopwords.words('english')]
+    tokens = [
+        token for token in tokens if token not in stopwords.words('english')]
 
     lemmatizer = WordNetLemmatizer()
     tokens = [lemmatizer.lemmatize(token) for token in tokens]
 
     return tokens
 
-def get_chunks(list, chunk_size): 
-	'''Generates chunks from list'''
-	for i in range(0, len(list), chunk_size):  
-		yield list[i:i + chunk_size] 
+
+def get_chunks(list, chunk_size):
+    '''Generates chunks from list'''
+    for i in range(0, len(list), chunk_size):
+        yield list[i:i + chunk_size]
+
 
 def build_graph(filepath, names, chunk_size=300):
     '''
@@ -162,8 +171,9 @@ def build_graph(filepath, names, chunk_size=300):
         chunk_characters = [word for word in chunk if word in names]
         subgraph = nx.complete_graph(chunk_characters)
         graph = nx.compose(graph, subgraph)
-    
+
     return graph
+
 
 def build_subgraphs(filepaths, pickle_path='subgraphs.p'):
     '''
@@ -181,21 +191,23 @@ def build_subgraphs(filepaths, pickle_path='subgraphs.p'):
     pickle.dump(subgraphs, io.open(f'{pickle_path}', 'wb'))
     return subgraphs
 
+
 def set_race_(graph, df):
     '''Gives every node in the graph proper race information'''
     for name, fields in df.iterrows():
         if name in graph.nodes:
             graph.nodes[name]['race'] = fields.race
 
-#%%
+
+# %%
 # Build the graphs from the declared datasources
 filepaths = [
-	'data/book/part1.txt',
-	'data/book/part2.txt',
-	'data/book/part3.txt',
-	'data/movie/part1.txt',
-	'data/movie/part2.txt',
-	'data/movie/part3.txt'
+    'data/book/part1.txt',
+    'data/book/part2.txt',
+    'data/book/part3.txt',
+    'data/movie/part1.txt',
+    'data/movie/part2.txt',
+    'data/movie/part3.txt'
 ]
 # Create subgraph for every file
 subgraphs = build_subgraphs(filepaths)
@@ -216,8 +228,8 @@ lotr_graph = nx.compose(books_graph, movies_graph)
 # %% [markdown]
 # ## Initial analysis
 # At the beginning, we wanted to analyze the global graph which connects books and movies.
-# 
-# The most basic statistics: 
+#
+# The most basic statistics:
 
 # %%
 print("Nodes:", lotr_graph.number_of_nodes())
@@ -228,6 +240,8 @@ print("Edges:", lotr_graph.number_of_edges())
 
 # %%
 # Plotting the node distribution
+
+
 def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=111):
     '''
     Wrapper around various pyplot configuration options
@@ -240,7 +254,9 @@ def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=1
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid()
-    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+    plt.figtext(0.5, -0.1, caption, wrap=True,
+                horizontalalignment='center', fontsize=12)
+
 
 def nodes_distribution_barchart(graph, title, caption):
     '''
@@ -251,6 +267,7 @@ def nodes_distribution_barchart(graph, title, caption):
     barchart_distributions(degrees, title, caption, 'Node degree', 'Count')
     plt.show()
 
+
 title = 'Degree distribution in LotR character graph'
 caption = 'Figure 1. Distribution of node degrees in LotR character graph connecting books and movies.'
 nodes_distribution_barchart(lotr_graph, title, caption)
@@ -259,12 +276,15 @@ nodes_distribution_barchart(lotr_graph, title, caption)
 # And visualization of the whole graph itself. TODO: More comments
 
 # %%
+
+
 def get_node_size_map(graph, nodes):
     '''
     Returns size map taking node degree into account
     '''
     degrees = dict(graph.degree(nodes))
     return [v for v in degrees.values()]
+
 
 def get_race_nodes(graph, race):
     '''
@@ -276,11 +296,13 @@ def get_race_nodes(graph, race):
             nodes.append(node[0])
     return nodes
 
+
 def get_race_color(race):
     '''
     Return node color of the race
     '''
-    return '#' + format(hash(race)%0xFFFFFF, 'x').zfill(6)
+    return '#' + format(hash(race) % 0xFFFFFF, 'x').zfill(6)
+
 
 def draw_race_nodes(graph, race, positions):
     '''
@@ -295,20 +317,24 @@ def draw_race_nodes(graph, race, positions):
         node_color=get_race_color(race),
         label=race)
 
+
 def draw_fa2(graph, caption):
     '''
     Draws graph using Force Atlas 2
     '''
     plt.figure(figsize=(14, 8))
     # Determine node positions using Force Atlas 2 and draw. Use default config.
-    positions = ForceAtlas2().forceatlas2_networkx_layout(graph, pos=None, iterations=500)
+    positions = ForceAtlas2().forceatlas2_networkx_layout(
+        graph, pos=None, iterations=500)
     for race in races:
         draw_race_nodes(graph, race.lower(), positions)
     nx.draw_networkx_edges(graph, positions, width=0.1)
     plt.axis('off')
-    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
-    plt.legend(scatterpoints = 1)
+    plt.figtext(0.5, -0.1, caption, wrap=True,
+                horizontalalignment='center', fontsize=12)
+    plt.legend(scatterpoints=1)
     plt.show()
+
 
 caption = 'Figure 2. Visualization of the LotR graph'
 draw_fa2(lotr_graph, caption)
@@ -317,6 +343,8 @@ draw_fa2(lotr_graph, caption)
 # TODO: Comments, intro to further analysis etc.
 
 # %%
+
+
 def report_characters(graph):
     '''
     Prints information about 5 most connected characters according to the edge directions
