@@ -165,6 +165,22 @@ def build_graph(filepath, names, chunk_size=300):
     
     return graph
 
+def build_subgraphs(filepaths, pickle_path='subgraphs.p'):
+    '''
+    Calls build_graph for every file in filepaths.
+    Tries to read from local file if possible.
+    '''
+    try:
+        return pickle.load(open(f'{pickle_path}', 'rb'))
+    except Exception:
+        print(f'Loading {pickle_path} failed. Recreating.')
+    subgraphs = []
+    for filepath in filepaths:
+        subgraphs.append(build_graph(filepath, lotr_names))
+        set_race_(subgraphs[-1], characters)
+    pickle.dump(subgraphs, io.open(f'{pickle_path}', 'wb'))
+    return subgraphs
+
 def set_race_(graph, df):
     '''Gives every node in the graph proper race information'''
     for name, fields in df.iterrows():
@@ -182,10 +198,7 @@ filepaths = [
 	'data/movie/part3.txt'
 ]
 # Create subgraph for every file
-subgraphs = []
-for filepath in filepaths:
-    subgraphs.append(build_graph(filepath, lotr_names))
-    set_race_(subgraphs[-1], characters)
+subgraphs = build_subgraphs(filepaths)
 
 # Create graph from book connections
 books_graph = nx.Graph()
@@ -229,58 +242,86 @@ def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=1
     plt.grid()
     plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
 
-degrees = [degree for _, degree in lotr_graph.degree()]
-plt.figure(figsize=(14, 6))
+def nodes_distribution_barchart(graph, title, caption):
+    '''
+    Draws barchart with node distribution in the graph
+    '''
+    degrees = [degree for _, degree in graph.degree()]
+    plt.figure(figsize=(14, 6))
+    barchart_distributions(degrees, title, caption, 'Node degree', 'Count')
+    plt.show()
+
 title = 'Degree distribution in LotR character graph'
-barchart_distributions(degrees, title, 'Figure 1. Distribution of node degrees in LotR character graph connecting books and movies.', 'Node degree', 'Count')
-plt.show()
+caption = 'Figure 1. Distribution of node degrees in LotR character graph connecting books and movies.'
+nodes_distribution_barchart(lotr_graph, title, caption)
 
 # %% [markdown]
 # And visualization of the whole graph itself. TODO: More comments
 
 # %%
-def get_node_size_map(graph):
+def get_node_size_map(graph, nodes):
     '''
     Returns size map taking node degree into account
     '''
-    degrees = dict(graph.degree)
+    degrees = dict(graph.degree(nodes))
     return [v for v in degrees.values()]
 
-def get_node_color_map(graph):
+def get_race_nodes(graph, race):
     '''
-    Returns node color map taking race into account
+    Return nodes of specific race in the graph
     '''
-    color_map = []
+    nodes = []
     for node in graph.nodes(data=True):
-        color = '#00' + format(hash(node[1]['race'])%0xFFFF, 'x')
-        color_map.append(color)
-    return color_map
+        if node[1]['race'] == race:
+            nodes.append(node[0])
+    return nodes
 
-plt.figure(figsize=(14, 8))
-# Determine node positions using Force Atlas 2 and draw. Use default config.
-positions = ForceAtlas2().forceatlas2_networkx_layout(lotr_graph, pos=None, iterations=500)
-nx.draw_networkx_nodes(
-    lotr_graph,
-    positions,
-    node_size=get_node_size_map(lotr_graph),
-    node_color=get_node_color_map(lotr_graph))
-nx.draw_networkx_edges(
-    lotr_graph,
-    positions,
-    width=0.1)
-plt.axis('off')
+def get_race_color(race):
+    '''
+    Return node color of the race
+    '''
+    return '#' + format(hash(race)%0xFFFFFF, 'x').zfill(6)
+
+def draw_race_nodes(graph, race, positions):
+    '''
+    Draws nodes of the given race from the graph
+    '''
+    race_nodes = get_race_nodes(graph, race)
+    nx.draw_networkx_nodes(
+        graph,
+        positions,
+        nodelist=race_nodes,
+        node_size=get_node_size_map(graph, race_nodes),
+        node_color=get_race_color(race),
+        label=race)
+
+def draw_fa2(graph, caption):
+    '''
+    Draws graph using Force Atlas 2
+    '''
+    plt.figure(figsize=(14, 8))
+    # Determine node positions using Force Atlas 2 and draw. Use default config.
+    positions = ForceAtlas2().forceatlas2_networkx_layout(graph, pos=None, iterations=500)
+    for race in races:
+        draw_race_nodes(graph, race.lower(), positions)
+    nx.draw_networkx_edges(graph, positions, width=0.1)
+    plt.axis('off')
+    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+    plt.legend(scatterpoints = 1)
+    plt.show()
+
 caption = 'Figure 2. Visualization of the LotR graph'
-plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
-plt.show()
+draw_fa2(lotr_graph, caption)
 
 # %% [markdown]
 # TODO: Comments, intro to further analysis etc.
 
 # %%
-def report_characters(degrees):
+def report_characters(graph):
     '''
     Prints information about 5 most connected characters according to the edge directions
     '''
+    degrees = graph.degree()
     top = sorted(degrees, key=lambda x: x[1], reverse=True)[:5]
     print(f'Top 5 connected characters')
     print(f'{"name:": <35}links:')
@@ -288,5 +329,5 @@ def report_characters(degrees):
         print(f'{h[0]: <35}{h[1]}')
 
 
-report_characters(lotr_graph.degree())
+report_characters(lotr_graph)
 # %%
