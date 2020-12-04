@@ -371,7 +371,7 @@ report_characters(books_graph)
 
 # %% [markdown]
 # **Graph visualization.**
-caption = 'Figure 2. Visualization of the Lord of the Rings graph'
+caption = 'Figure 2. Visualization of the Lord of the Rings graph (book characters)'
 draw_fa2(books_graph, caption)
 
 # %% [markdown]
@@ -391,7 +391,7 @@ report_characters(movies_graph)
 
 # %% [markdown]
 # **Graph visualization.**
-caption = 'Figure 4. Visualization of the Lord of the Rings graph'
+caption = 'Figure 4. Visualization of the Lord of the Rings graph (movie characters)'
 draw_fa2(movies_graph, caption)
 
 # %% [markdown]
@@ -401,14 +401,50 @@ basic_stats(combined_graph)
 
 # %% [markdown]
 # **Node degree distribution:**
-title = 'Degree distribution in book character graph'
-caption = 'Figure 5. Distribution of node degrees in LotR character graph connecting books.'
+title = 'Degree distribution in combined character graph'
+caption = 'Figure 5. Distribution of node degrees in LotR character graph connecting books and movies.'
 nodes_distribution_barchart(combined_graph, title, caption)
 
 # %% [markdown]
 # **Most connected nodes**
 report_characters(combined_graph)
 
+# %% [markdown]
+# **Graph visualization.**
+caption = 'Figure 6. Visualization of the Lord of the Rings graph (books and movies combined)'
+draw_fa2(combined_graph, caption)
 
-report_characters(lotr_graph)
+# %% [markdown]
+# ### Comments on the results
+# #### Number of nodes and edges
+# There are several observations which can be made from the results.
+#
+# First of all, there's clear difference between number of nodes in books graph and movies graph. The former one has 149 nodes, while the latter one has only 62 of them. Obviously, it was easier for Tolkien to write about some character (or at least mention them) than for Jackson to find nearly 150 cast members (not including background actors). This leads to the conclusion that book is over 2 times more rich in content in terms of number of characters.
+#
+#  It is also interesting that combined graph contains 155 nodes, so 6 more than books. It means that some character were created by move director, even though they did not appear in the original book.
+#
+# Another conclusion from the number of nodes and edges is that one has to read the books and watch the movies to have some basic knowledge about every character in the Lort of the Rings universe.
+#
+# One can also notice that our names list has 173 entries, while combined graph has around 15 nodes less. The missing nodes are listed below:
+set(lotr_names).difference(set(combined_graph.nodes))
+
+# %% [markdown]
+# Those nodes usually come from the movies and are non-canonical characters. They are not in the graph, because even in the movie script they were background characters and were not given any name. Articles in wiki probably use names created by fans or obtained from other sources (ex. director comments).
+
+# %% [markdown]
+# #### Degree distribution
+# In general, one can think that the degree distributions follow the power-law, but it is not exactly the case here. For network to be scale-free, there should be big number of nodes with the lowest degree (i.e. 1) and it should exponentially decrease with the degree. Here, on every plot the highest count is around degree 10. It decreases later, but it does not happen smoothly. One can say, at most, that those networks are 'scale-free-like'. It makes perfect sense, though, as they are not typical social networks or semantic networks. They are artificially build using predefined chunk size. They may be considered as semi-social networks, as they are build using character interactions.
+#
+# It is also quite interesting that nodes in movie network have lower degree in general - they vary between 1 and around 60, while in books they go from 1 to around 120. This may be caused by the different nature of media - in a book a character can think about someone else who is not currently present with them. In a movie, there are no character thoughts and characters interact only with those present in the scene with them. Therefore, there is less 'mixing' of the characters, as they are contained in their scenes. Moreover, there are just more characters mentioned in the books, as seen in the node counts. 
+
+# %% [markdown]
+# #### Most connected nodes
+# The most connected nodes in all the graphs are mostly similar. All of them include Gandalf, Frodo and Aragorn, who are probably the best known and most important characters of the LotR world. The biggest surprise is very high degree of Bilbo in books. It may be caused by the fact, the he is uncle of Frodo who mentions him quite often in the book. In movie there is no way to show character's thoughts, so Bilbo is not as highly ranked as in the book.
+# %% [markdown]
+# #### Graphs visualization
+# When it comes to visualizations, they are not as pretty as for the hero network created during the course. Even though nodes are colored according to the character races taken from wiki, one cannot find clear separation, communities or anything similar. This is caused by the way of narration in the books or movies - everything was happening simultaneously and characters were mixed together. There was no 'Frodo point of view' VS 'Sauron point of view', which would help in separating the opposide sides of the conflict. 
+#
+# The graphs, however, confirm observations from the previous points - as books have more nodes and more connections between them, the graph looks way more dense than the movie one. 
+#
+# Also, thanks to the coloring of nodes, it can be observed that, although there are many creature races in the book and movies, vast majority of the characters in the story are men or hobbits. 
 # %%
