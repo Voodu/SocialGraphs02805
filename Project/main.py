@@ -157,6 +157,13 @@ def get_chunks(list, chunk_size):
         yield list[i:i + chunk_size]
 
 
+def remove_isolates(graph):
+    '''
+    Removes isolated nodes from the graph
+    '''
+    graph.remove_nodes_from(list(nx.isolates(graph)))
+
+
 def build_graph(filepath, names, chunk_size=300):
     '''
     Builds graph of characters with given names from data in specified file.
@@ -187,6 +194,7 @@ def build_subgraphs(filepaths, pickle_path='subgraphs.p'):
     subgraphs = []
     for filepath in filepaths:
         subgraphs.append(build_graph(filepath, lotr_names))
+        remove_isolates(subgraphs[-1])
         set_race_(subgraphs[-1], characters)
     pickle.dump(subgraphs, io.open(f'{pickle_path}', 'wb'))
     return subgraphs
@@ -223,23 +231,30 @@ for subgraph in subgraphs[3:]:
     movies_graph = nx.compose(movies_graph, subgraph)
 
 # Compose one big graph connecting all the books and movies
-lotr_graph = nx.compose(books_graph, movies_graph)
+combined_graph = nx.compose(books_graph, movies_graph)
 
 # %% [markdown]
-# ## Initial analysis
-# At the beginning, we wanted to analyze the global graph which connects books and movies.
+# ## Graph analysis
+# We decided to perform analysis on several graph combinations and compare the results:
+# - books graph
+# - movies graph
+# - combined graph
 #
-# The most basic statistics:
+#
+# For every situation we will:
+# - check node & edge count
+# - see node degree distribution
+# - find most connected nodes
+# - plot the network
+#
+# Below we define functions used later for every graph.
 
 # %%
-print("Nodes:", lotr_graph.number_of_nodes())
-print("Edges:", lotr_graph.number_of_edges())
 
-# %% [markdown]
-# The next step was to check, how the node degrees are distributed in the graph.
 
-# %%
-# Plotting the node distribution
+def basic_stats(graph):
+    print("Nodes:", graph.number_of_nodes())
+    print("Edges:", graph.number_of_edges())
 
 
 def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=111):
@@ -268,14 +283,16 @@ def nodes_distribution_barchart(graph, title, caption):
     plt.show()
 
 
-title = 'Degree distribution in LotR character graph'
-caption = 'Figure 1. Distribution of node degrees in LotR character graph connecting books and movies.'
-nodes_distribution_barchart(lotr_graph, title, caption)
-
-# %% [markdown]
-# And visualization of the whole graph itself. TODO: More comments
-
-# %%
+def report_characters(graph):
+    '''
+    Prints information about 5 most connected characters
+    '''
+    degrees = graph.degree()
+    top = sorted(degrees, key=lambda x: x[1], reverse=True)[:5]
+    print(f'Top 5 connected characters')
+    print(f'{"name:": <35}links:')
+    for h in top:
+        print(f'{h[0]: <35}{h[1]}')
 
 
 def get_node_size_map(graph, nodes):
@@ -329,6 +346,7 @@ def draw_fa2(graph, caption):
     for race in races:
         draw_race_nodes(graph, race.lower(), positions)
     nx.draw_networkx_edges(graph, positions, width=0.1)
+    nx.draw_networkx_labels(graph, positions, font_size=7)
     plt.axis('off')
     plt.figtext(0.5, -0.1, caption, wrap=True,
                 horizontalalignment='center', fontsize=12)
@@ -336,25 +354,60 @@ def draw_fa2(graph, caption):
     plt.show()
 
 
-caption = 'Figure 2. Visualization of the LotR graph'
-draw_fa2(lotr_graph, caption)
+# %% [markdown]
+# ### Books graph
+# **The node & edge count:**
+basic_stats(books_graph)
 
 # %% [markdown]
-# TODO: Comments, intro to further analysis etc.
+# **Node degree distribution:**
+title = 'Degree distribution in book character graph'
+caption = 'Figure 1. Distribution of node degrees in LotR character graph connecting books.'
+nodes_distribution_barchart(books_graph, title, caption)
 
-# %%
+# %% [markdown]
+# **Most connected nodes**
+report_characters(books_graph)
 
+# %% [markdown]
+# **Graph visualization.**
+caption = 'Figure 2. Visualization of the Lord of the Rings graph'
+draw_fa2(books_graph, caption)
 
-def report_characters(graph):
-    '''
-    Prints information about 5 most connected characters according to the edge directions
-    '''
-    degrees = graph.degree()
-    top = sorted(degrees, key=lambda x: x[1], reverse=True)[:5]
-    print(f'Top 5 connected characters')
-    print(f'{"name:": <35}links:')
-    for h in top:
-        print(f'{h[0]: <35}{h[1]}')
+# %% [markdown]
+# ### Movies graph
+# **The node & edge count:**
+basic_stats(movies_graph)
+
+# %% [markdown]
+# **Node degree distribution:**
+title = 'Degree distribution in book character graph'
+caption = 'Figure 3. Distribution of node degrees in LotR character graph connecting movies.'
+nodes_distribution_barchart(movies_graph, title, caption)
+
+# %% [markdown]
+# **Most connected nodes**
+report_characters(movies_graph)
+
+# %% [markdown]
+# **Graph visualization.**
+caption = 'Figure 4. Visualization of the Lord of the Rings graph'
+draw_fa2(movies_graph, caption)
+
+# %% [markdown]
+# ### Combined graph
+# **The node & edge count:**
+basic_stats(combined_graph)
+
+# %% [markdown]
+# **Node degree distribution:**
+title = 'Degree distribution in book character graph'
+caption = 'Figure 5. Distribution of node degrees in LotR character graph connecting books.'
+nodes_distribution_barchart(combined_graph, title, caption)
+
+# %% [markdown]
+# **Most connected nodes**
+report_characters(combined_graph)
 
 
 report_characters(lotr_graph)
