@@ -18,13 +18,23 @@ from wordcloud import WordCloud
 
 # %% [markdown]
 # # Lord of the Rings - analysis
-# In the project we would like to analyze text of three LotR books and movie scripts. Two main goals are to understand connections between characters and sentiment change over time in books and movies.
+# %% [markdown]
+# ## Motivation
+# The project is about analyzing Lord of the Rings characters. By taking books and movie scripts we would like to understand connections between characters and check how does the sentiment in them change over time
 #
-# Analysis will be performed over all 300-word chunks of text from book/script. Movie scripts are taken from https://www.imsdb.com/ and books are taken from http://ae-lib.org.ua/. Character information and names list are taken from LotR wiki: https://lotr.fandom.com/wiki
+# Analysis will be performed over all 300-word chunks of text from book/script. Movie scripts are taken from https://www.imsdb.com/ and books are taken from http://ae-lib.org.ua/. Character information and names list are taken from LotR wiki: https://lotr.fandom.com/wiki. It was chosen over normal wikipedia, because it has more comprehensive list of characters and their descriptions are structured very similarly (ex. it is easier to scrap race of every character).
 
 # %% [markdown]
-# ## Preparing the data
-# After downloading the books and the scripts, a character list was needed. To get it, we combined https://lotr.fandom.com/wiki/Category:The_Lord_of_the_Rings_Characters list and sublists appearing in it. After cleaning the data, 174 characters remained in the final list.
+# ## Part 1 - graphs and character network
+# %% [markdown]
+# ### Preparing the data & basic statistics
+# After downloading the books and the scripts, a character list was needed. To get it, we combined https://lotr.fandom.com/wiki/Category:The_Lord_of_the_Rings_Characters list and sublists appearing in it. After cleaning the data, 173 characters remained in the final list.
+#
+# Cleaning included i.a.:
+# - removing non-character characters, ex. `The Ring` which is not a real character,
+# - removing/shortening characters with multiple-word names like Samwise Gamgee to Sam. It had two reasons - first of all, tokenization works correctly only with single words, secondly some character full names are not used in the books/movies (ex. above Sam/Samwise),
+# - removing duplicate characters - fortunately very rarely, but some characters were listed twice (ex. young/old version of them). We were not interested in this distinction.
+#
 #
 # The most common attribute on the wiki, which appeared on most of the pages, was character race. Therefore, it was added to each character information in the list.
 #
@@ -113,9 +123,9 @@ lotr_names = list(characters.index)
 characters.head()
 
 # %% [markdown]
-# ## Building the graphs
+# #### Building the graphs
 # To allow analysis of various things, subgraphs for each book/movie were created and combined later. This allowed to analyze them separately and in groups, when necessary.
-# ### Algorithm of graph building
+# ##### Algorithm of graph building
 # 1. For every data source DS:
 #    1. Create empty graph G
 #    1. Tokenize text of the given data source
@@ -234,7 +244,13 @@ for subgraph in subgraphs[3:]:
 combined_graph = nx.compose(books_graph, movies_graph)
 
 # %% [markdown]
-# ## Graph analysis
+# #### Introductory comments on the dataset
+# As will be seen in the next section, the dataset is much smaller than the hero network created during the course. It is, however, hard to avoid - J.R.R. Tolkien had to create all the characters on his own, while Marvel and DC heroes are created by numerous writers. 
+#
+# More comments, which take concrete analysis information into account, are provided below. 
+
+# %% [markdown]
+# ### Graph analysis
 # We decided to perform analysis on several graph combinations and compare the results:
 # - books graph
 # - movies graph
@@ -247,12 +263,18 @@ combined_graph = nx.compose(books_graph, movies_graph)
 # - find most connected nodes
 # - plot the network
 #
+#
+# That analysis will give us good understanding of the network, connections between nodes, and its overall shape. Checking node and edge count will give us information about complexity of each network (and 'content richness' of each media type). Degree distribution will allow to see, what type of network was created. Most connected nodes will show us, what are the most important characters in the trilogy. Visualizations will help to confirm previous results and also see, how the race of characters is distributed in the stroy.
+#
 # Below we define functions used later for every graph.
 
 # %%
 
 
 def basic_stats(graph):
+    '''
+    Prints count of graph nodes and edges.
+    '''
     print("Nodes:", graph.number_of_nodes())
     print("Edges:", graph.number_of_edges())
 
@@ -285,11 +307,11 @@ def nodes_distribution_barchart(graph, title, caption):
 
 def report_characters(graph):
     '''
-    Prints information about 5 most connected characters
+    Prints information about 10 most connected characters
     '''
     degrees = graph.degree()
-    top = sorted(degrees, key=lambda x: x[1], reverse=True)[:5]
-    print(f'Top 5 connected characters')
+    top = sorted(degrees, key=lambda x: x[1], reverse=True)[:10]
+    print(f'Top 10 connected characters')
     print(f'{"name:": <35}links:')
     for h in top:
         print(f'{h[0]: <35}{h[1]}')
@@ -348,6 +370,7 @@ def draw_fa2(graph, caption):
     nx.draw_networkx_edges(graph, positions, width=0.1)
     nx.draw_networkx_labels(graph, positions, font_size=7)
     plt.axis('off')
+    plt.gca().set_facecolor('white')
     plt.figtext(0.5, -0.1, caption, wrap=True,
                 horizontalalignment='center', fontsize=12)
     plt.legend(scatterpoints=1)
@@ -355,7 +378,7 @@ def draw_fa2(graph, caption):
 
 
 # %% [markdown]
-# ### Books graph
+# #### Books graph
 # **The node & edge count:**
 basic_stats(books_graph)
 
@@ -375,7 +398,7 @@ caption = 'Figure 2. Visualization of the Lord of the Rings graph (book characte
 draw_fa2(books_graph, caption)
 
 # %% [markdown]
-# ### Movies graph
+# #### Movies graph
 # **The node & edge count:**
 basic_stats(movies_graph)
 
@@ -395,7 +418,7 @@ caption = 'Figure 4. Visualization of the Lord of the Rings graph (movie charact
 draw_fa2(movies_graph, caption)
 
 # %% [markdown]
-# ### Combined graph
+# #### Combined graph
 # **The node & edge count:**
 basic_stats(combined_graph)
 
@@ -415,8 +438,9 @@ caption = 'Figure 6. Visualization of the Lord of the Rings graph (books and mov
 draw_fa2(combined_graph, caption)
 
 # %% [markdown]
-# ### Comments on the results
-# #### Number of nodes and edges
+# #### Comments and discussion on the results of graph analysis
+# %% [markdown]
+# ##### Number of nodes and edges
 # There are several observations which can be made from the results.
 #
 # First of all, there's clear difference between number of nodes in books graph and movies graph. The former one has 149 nodes, while the latter one has only 62 of them. Obviously, it was easier for Tolkien to write about some character (or at least mention them) than for Jackson to find nearly 150 cast members (not including background actors). This leads to the conclusion that book is over 2 times more rich in content in terms of number of characters.
@@ -432,19 +456,28 @@ set(lotr_names).difference(set(combined_graph.nodes))
 # Those nodes usually come from the movies and are non-canonical characters. They are not in the graph, because even in the movie script they were background characters and were not given any name. Articles in wiki probably use names created by fans or obtained from other sources (ex. director comments).
 
 # %% [markdown]
-# #### Degree distribution
+# ##### Degree distribution
 # In general, one can think that the degree distributions follow the power-law, but it is not exactly the case here. For network to be scale-free, there should be big number of nodes with the lowest degree (i.e. 1) and it should exponentially decrease with the degree. Here, on every plot the highest count is around degree 10. It decreases later, but it does not happen smoothly. One can say, at most, that those networks are 'scale-free-like'. It makes perfect sense, though, as they are not typical social networks or semantic networks. They are artificially build using predefined chunk size. They may be considered as semi-social networks, as they are build using character interactions.
 #
 # It is also quite interesting that nodes in movie network have lower degree in general - they vary between 1 and around 60, while in books they go from 1 to around 120. This may be caused by the different nature of media - in a book a character can think about someone else who is not currently present with them. In a movie, there are no character thoughts and characters interact only with those present in the scene with them. Therefore, there is less 'mixing' of the characters, as they are contained in their scenes. Moreover, there are just more characters mentioned in the books, as seen in the node counts. 
 
 # %% [markdown]
-# #### Most connected nodes
-# The most connected nodes in all the graphs are mostly similar. All of them include Gandalf, Frodo and Aragorn, who are probably the best known and most important characters of the LotR world. The biggest surprise is very high degree of Bilbo in books. It may be caused by the fact, the he is uncle of Frodo who mentions him quite often in the book. In movie there is no way to show character's thoughts, so Bilbo is not as highly ranked as in the book.
+# ##### Most connected nodes
+# The most connected nodes in all the graphs are partially similar, but not as much as one may assume. All of them include some of the most important characters like four hobbits, Gandalf or Aragorn. Books are more focused on hobbits, i.e. Frodo, Sam, Merry and Pippin, as they occupy top positions in the ranking, while movies are more focused on Aragorn, Legolas, Gimli, Gandalf and Frodo - the team one usually sees on the movie posters. The biggest surprise is very high degree of Bilbo in books. It may be caused by the fact, the he is uncle of Frodo who mentions him quite often in the book. In movie there is no way to show character's thoughts, so Bilbo is not as highly ranked as in the book.
 # %% [markdown]
-# #### Graphs visualization
+# ##### Graphs visualization
 # When it comes to visualizations, they are not as pretty as for the hero network created during the course. Even though nodes are colored according to the character races taken from wiki, one cannot find clear separation, communities or anything similar. This is caused by the way of narration in the books or movies - everything was happening simultaneously and characters were mixed together. There was no 'Frodo point of view' VS 'Sauron point of view', which would help in separating the opposide sides of the conflict. 
 #
 # The graphs, however, confirm observations from the previous points - as books have more nodes and more connections between them, the graph looks way more dense than the movie one. 
 #
 # Also, thanks to the coloring of nodes, it can be observed that, although there are many creature races in the book and movies, vast majority of the characters in the story are men or hobbits. 
+
+# %% [markdown]
+# ##### Other thoughts
+# To provide more interesting network analysis, more manual work with extended domain knowledge is required. Unfortunately, wiki is not complete, i.e. there are very few common attributes as race for every character. If there were additional information (ex. conflict side), more interesting insights would be possible to derive. The above analysis still enabled to understand the differences between book and movies, but definitely can be extended by providing additional data. Also, it was a bit disappointing that there were no clear hubs in the graph which would indicate different groups, ex. 'the ring team', wizards, or anything else. Most probably it was caused by the way the analysis was performed. It may be worth checking, how the network would look if it was created using wiki article analysis or by making a weighted edges and increasing the weight each time two characters are connected. Hopefully, that approach can help in finding reasonable communities.
+
+# %% [markdown]
+# ## Contributions
+# - Part 1 was done by Piotr Ładoński
+# - Part 2 was done by Paweł Darulewski
 # %%
