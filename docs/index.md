@@ -1,11 +1,20 @@
 # Lord of the Rings - analysis
-
 ## General introduction
-Duis incididunt nulla magna non nulla velit nostrud qui deserunt magna minim nulla eu laborum. Incididunt Lorem officia voluptate nisi aute mollit voluptate laborum adipisicing irure culpa ex Lorem excepteur. Est et nulla tempor nisi labore officia ut id ad esse sunt sunt fugiat labore.
+The project is about analyzing Lord of the Rings characters. By taking books and movie scripts we would like to understand connections between characters and check how does the sentiment in them change over time
+
 ### Dataset
-Aliqua exercitation eu ipsum pariatur duis tempor. Aliquip consectetur tempor dolore voluptate. Officia et dolore occaecat elit non qui labore do ipsum velit nisi. Non dolore non anim mollit ullamco tempor.
+Analysis will be performed over all 300-word chunks of text from book/script. Movie scripts are taken from https://www.imsdb.com/ and books are taken from http://ae-lib.org.ua/. Character information and names list are taken from [LotR wiki]( https://lotr.fandom.com/wiki). It was chosen over normal wikipedia, because it has more comprehensive list of characters and their descriptions are structured very similarly (ex. it is easier to scrap race of every character).
+
+Total number of characters is around 170, number of nodes in the biggest graph is 155 and there are over 2100 edges. There over 300.000 tokenized words in the whole dataset (books and movies). Character list is enriched with their race information taken from the wiki.
 ### Main goals
-Duis pariatur ullamco fugiat excepteur amet nulla. Tempor incididunt aliqua elit esse ea id exercitation aliquip ad cillum. Et do ex voluptate tempor. Proident consectetur incididunt consequat Lorem irure aliquip elit velit non voluptate. Est proident aliqua excepteur cillum tempor nulla laborum. Qui sunt cupidatat ipsum sit anim excepteur amet. Tempor deserunt deserunt irure mollit cillum magna magna aliqua enim dolor nostrud Lorem.
+There are two main goals of the project:
+1. Understanding, how the characters are connected:
+    - Are there any strict communities or hubs?
+    - Which characters are the most important?
+    - Is there anything interesting about races?
+2. Determining sentiment of the books and movies over time
+    - TODO
+    - TODO
 
 
 ## Graph analysis
