@@ -1,3 +1,5 @@
 theme: jekyll-theme-slate
 title: Project - Lord of the Rings
 description: Piotr Ładoński & Paweł Darulewski
+github:
+  is_project_page: false
