@@ -6,15 +6,21 @@ import numpy as np
 import pandas as pd
 import pickle
 import requests
+import community
 
 from bs4 import BeautifulSoup
 from fa2 import ForceAtlas2
 from matplotlib import pyplot as plt
 from nltk import word_tokenize
+from nltk import FreqDist
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from tqdm.notebook import tqdm
 from wordcloud import WordCloud
+import seaborn as sns
+
+sns.set_theme()
+sns.set_palette('gnuplot2')
 
 # %% [markdown]
 # # Lord of the Rings - analysis
@@ -291,8 +297,8 @@ def barchart_distributions(data, title, caption, xlabel='', ylabel='', subplot=1
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid()
-    plt.figtext(0.5, -0.1, caption, wrap=True,
-                horizontalalignment='center', fontsize=12)
+    plt.figtext(
+        0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
 
 
 def nodes_distribution_barchart(graph, title, caption):
@@ -322,7 +328,7 @@ def get_node_size_map(graph, nodes):
     Returns size map taking node degree into account
     '''
     degrees = dict(graph.degree(nodes))
-    return [v for v in degrees.values()]
+    return [v*10 for v in degrees.values()]
 
 
 def get_race_nodes(graph, race):
@@ -336,11 +342,11 @@ def get_race_nodes(graph, race):
     return nodes
 
 
-def get_race_color(race):
+def get_property_color(prop):
     '''
     Return node color of the race
     '''
-    return '#' + format(hash(race) % 0xFFFFFF, 'x').zfill(6)
+    return '#' + format(hash(prop) % 0xFFFFFF, 'x').zfill(6)
 
 
 def draw_race_nodes(graph, race, positions):
@@ -353,8 +359,10 @@ def draw_race_nodes(graph, race, positions):
         positions,
         nodelist=race_nodes,
         node_size=get_node_size_map(graph, race_nodes),
-        node_color=get_race_color(race),
-        label=race)
+        node_color=get_property_color(race),
+        label=race,
+        alpha=0.6
+    )
 
 
 def draw_fa2(graph, caption):
@@ -367,7 +375,7 @@ def draw_fa2(graph, caption):
         graph, pos=None, iterations=500)
     for race in races:
         draw_race_nodes(graph, race.lower(), positions)
-    nx.draw_networkx_edges(graph, positions, width=0.1)
+    nx.draw_networkx_edges(graph, positions, width=0.1, alpha=0.5)
     nx.draw_networkx_labels(graph, positions, font_size=7)
     plt.axis('off')
     plt.gca().set_facecolor('white')
@@ -466,7 +474,7 @@ set(lotr_names).difference(set(combined_graph.nodes))
 # The most connected nodes in all the graphs are partially similar, but not as much as one may assume. All of them include some of the most important characters like four hobbits, Gandalf or Aragorn. Books are more focused on hobbits, i.e. Frodo, Sam, Merry and Pippin, as they occupy top positions in the ranking, while movies are more focused on Aragorn, Legolas, Gimli, Gandalf and Frodo - the team one usually sees on the movie posters. The biggest surprise is very high degree of Bilbo in books. It may be caused by the fact, the he is uncle of Frodo who mentions him quite often in the book. In movie there is no way to show character's thoughts, so Bilbo is not as highly ranked as in the book.
 # %% [markdown]
 # ##### Graphs visualization
-# When it comes to visualizations, they are not as pretty as for the hero network created during the course. Even though nodes are colored according to the character races taken from wiki, one cannot find clear separation, communities or anything similar. This is caused by the way of narration in the books or movies - everything was happening simultaneously and characters were mixed together. There was no 'Frodo point of view' VS 'Sauron point of view', which would help in separating the opposide sides of the conflict. 
+# When it comes to visualizations, they are not as pretty as for the hero network created during the course. Even though nodes are colored according to the character races taken from wiki, one cannot find clear separation, communities or anything similar. This is caused by the way of narration in the books or movies - everything was happening simultaneously and characters were mixed together. There was no 'Frodo point of view' VS 'Sauron point of view', which would help in separating the opposite sides of the conflict.
 #
 # The graphs, however, confirm observations from the previous points - as books have more nodes and more connections between them, the graph looks way more dense than the movie one. 
 #
@@ -481,3 +489,126 @@ set(lotr_names).difference(set(combined_graph.nodes))
 # - Part 1 was done by Piotr Ładoński
 # - Part 2 was done by Paweł Darulewski
 # %%
+
+
+def find_communities_from(graph):
+    '''
+    Finding the communities, plotting them and printing the count.
+    '''
+    partition = community.best_partition(graph)
+    count = len(set(partition.values()))
+
+    print(f'No. of found communities: {count}')
+
+    return partition
+
+
+def set_community_attribute(graph, attributes):
+    '''
+    Function for setting the community attribute to the character node.
+    '''
+
+    for index in set(attributes.values()):
+        comm = {key: value for key, value in attributes.items() if value == index}
+        max_degree_node = max(dict(graph.subgraph(comm.keys()).degree()).items(), key=lambda x: x[1])
+
+        for node in comm.keys():
+            graph.nodes[node]['community'] = max_degree_node[0]
+    return graph
+
+
+# %%
+print('Movies communities: ')
+movies_communities = find_communities_from(movies_graph)
+movies_graph = set_community_attribute(movies_graph, movies_communities)
+
+print('Books communities: ')
+books_communities = find_communities_from(books_graph)
+books_graph = set_community_attribute(books_graph, books_communities)
+
+print('Combined communities: ')
+combined_communities = find_communities_from(combined_graph)
+combined_graph = set_community_attribute(combined_graph, combined_communities)
+
+# %%
+
+
+def plot_community_distribution(source, communities, caption):
+    '''
+    Plot the distribution of the communities in the graph.
+    '''
+
+    data = [value for _, value in communities.items()]
+    title = f'The {source} communities size distribution'
+    values, bins = np.histogram(data, 11)
+    plt.bar(bins[:-1], values, width=0.5)
+    plt.title(title)
+    plt.xlabel('Bin')
+    plt.ylabel('Count')
+    plt.grid()
+    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+    plt.show()
+
+# %%
+
+caption = 'Figure {}. The histogram is representing the number of members\nassigned to each community from the {} community.'
+
+[plot_community_distribution(comm[0], comm[1], comm[2]) for comm in [
+    ('movies', movies_communities, caption.format(7, 'movies')),
+    ('books', books_communities, caption.format(8, 'books')),
+    ('combined', combined_communities, caption.format(9, 'combined'))
+]]
+
+# %%
+
+
+def get_community_nodes(graph, community_id):
+    '''
+    Return nodes of specific race in the graph
+    '''
+
+    nodes = [node for node, value in nx.get_node_attributes(graph, 'community').items() if value == community_id]
+    return graph.subgraph(nodes)
+
+
+def draw_community_nodes(graph, community_id, positions):
+    '''
+    Draws nodes of the given community from the graph
+    '''
+    nodes = get_community_nodes(graph, community_id)
+    nx.draw_networkx_nodes(
+        graph,
+        positions,
+        nodelist=nodes,
+        node_size=get_node_size_map(graph, nodes),
+        node_color=get_property_color(str(community_id)),
+        label=community_id,
+        alpha=0.5,
+    )
+
+
+def draw_community_fa2(graph, caption):
+    '''
+    Draws graph using Force Atlas 2
+    '''
+    plt.figure(figsize=(14, 8), dpi=300)
+    # Determine node positions using Force Atlas 2 and draw. Use default config.
+    positions = ForceAtlas2().forceatlas2_networkx_layout(
+        graph, pos=None, iterations=500)
+    for community_id in nx.get_node_attributes(graph, 'community').keys():
+        draw_community_nodes(graph, community_id, positions)
+    nx.draw_networkx_edges(graph, positions, width=0.1, alpha=0.4)
+    nx.draw_networkx_labels(graph, positions, font_size=7)
+    plt.axis('off')
+    plt.figtext(
+        0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+    plt.legend(scatterpoints=1, labelspacing=1)
+    plt.show()
+
+
+caption = 'Figure {}. Visualization of the Lord of the Rings communities graph ({} characters)'
+[draw_community_fa2(comm[0], comm[1]) for comm in [
+    (movies_graph, caption.format(10, 'movies')),
+    (books_graph, caption.format(11, 'books')),
+    (combined_graph, caption.format(12, 'combined')),
+]]
