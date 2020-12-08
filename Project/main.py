@@ -41,9 +41,7 @@ np.random.seed(42)
 # Analysis will be performed over all 300-word chunks of text from book/script. Movie scripts are taken from https://www.imsdb.com/ and books are taken from http://ae-lib.org.ua/. Character information and names list are taken from LotR wiki: https://lotr.fandom.com/wiki. It was chosen over normal wikipedia, because it has more comprehensive list of characters and their descriptions are structured very similarly (ex. it is easier to scrap race of every character).
 
 # %% [markdown]
-# ## Part 1 - graphs and character network
-# %% [markdown]
-# ### Preparing the data & basic statistics
+# ## Preparing the data & basic statistics
 # After downloading the books and the scripts, a character list was needed. To get it, we combined https://lotr.fandom.com/wiki/Category:The_Lord_of_the_Rings_Characters list and sublists appearing in it. After cleaning the data, 173 characters remained in the final list.
 #
 # Cleaning included i.a.:
@@ -72,28 +70,28 @@ race_selector = '[data-source=race] > div > a'
 # Dictionary fixing redirect links pointing to the same article,
 # ex. Men is the same as Man
 race_translations = {
-    'Ainur'                      : 'Ainur',
-    'Black_Uruks'                : 'Black Uruks',
-    'Black_Uruk'                 : 'Black Uruks',
-    'Dr%C3%BAedain'              : 'Druedain',
-    'Dwarves'                    : 'Dwarves',
-    'Eagle'                      : 'Eagles',
-    'Eagles'                     : 'Eagles',
-    'Elves'                      : 'Elves',
-    'Ent'                        : 'Ents',
-    'Ents'                       : 'Ents',
-    'Great_Eagles'               : 'Eagles',
-    'Half-elven'                 : 'Half-elven',
-    'Hobbit'                     : 'Hobbits',
-    'Hobbits'                    : 'Hobbits',
-    'Man'                        : 'Men',
-    'Men'                        : 'Men',
-    'Orc'                        : 'Orcs',
-    'Orcs'                       : 'Orcs',
-    'Skin-changer'               : 'Skin-changer',
-    'Spiders'                    : 'Spiders',
+    'Ainur': 'Ainur',
+    'Black_Uruks': 'Black Uruks',
+    'Black_Uruk': 'Black Uruks',
+    'Dr%C3%BAedain': 'Druedain',
+    'Dwarves': 'Dwarves',
+    'Eagle': 'Eagles',
+    'Eagles': 'Eagles',
+    'Elves': 'Elves',
+    'Ent': 'Ents',
+    'Ents': 'Ents',
+    'Great_Eagles': 'Eagles',
+    'Half-elven': 'Half-elven',
+    'Hobbit': 'Hobbits',
+    'Hobbits': 'Hobbits',
+    'Man': 'Men',
+    'Men': 'Men',
+    'Orc': 'Orcs',
+    'Orcs': 'Orcs',
+    'Skin-changer': 'Skin-changer',
+    'Spiders': 'Spiders',
     'Theories_about_Tom_Bombadil': 'Unknown',
-    'Uruk-hai'                   : 'Uruk-hai'
+    'Uruk-hai': 'Uruk-hai'
 }
 races = set(race_translations.values())
 
@@ -140,7 +138,7 @@ characters.head()
 
 
 # %% [markdown]
-# #### Building the graphs
+# ### Building the graphs
 # To allow analysis of various things, subgraphs for each book/movie were created and combined later. This allowed to analyze them separately and in groups, when necessary.
 # ##### Algorithm of graph building
 # 1. For every data source DS:
@@ -263,13 +261,16 @@ combined_graph = nx.compose(books_graph, movies_graph)
 
 
 # %% [markdown]
-# #### Introductory comments on the dataset
+# ### Introductory comments on the dataset
 # As will be seen in the next section, the dataset is much smaller than the hero network created during the course. It is, however, hard to avoid - J.R.R. Tolkien had to create all the characters on his own, while Marvel and DC heroes are created by numerous writers.
 #
 # More comments, which take concrete analysis information into account, are provided below.
 
+
 # %% [markdown]
-# ### Graph analysis
+# ## Analysis part 1 - Graphs and character network
+
+# %% [markdown]
 # We decided to perform analysis on several graph combinations and compare the results:
 # - books graph
 # - movies graph
@@ -283,7 +284,7 @@ combined_graph = nx.compose(books_graph, movies_graph)
 # - plot the network
 #
 #
-# That analysis will give us good understanding of the network, connections between nodes, and its overall shape. Checking node and edge count will give us information about complexity of each network (and 'content richness' of each media type). Degree distribution will allow to see, what type of network was created. Most connected nodes will show us, what are the most important characters in the trilogy. Visualizations will help to confirm previous results and also see, how the race of characters is distributed in the stroy.
+# That analysis will give us good understanding of the network, connections between nodes, and its overall shape. 
 #
 # Below we define functions used later for every graph.
 
@@ -399,67 +400,121 @@ def draw_fa2(graph, caption):
 
 
 # %% [markdown]
-# #### Books graph
-# **The node & edge count:**
+# ### The node & edge count
+# %% [markdown]
+# #### Analysis
+# Checking node and edge count will give us information about complexity of each network (and 'content richness' of each media type).
+
+# %% [markdown]
+# **Books graph**
 basic_stats(books_graph)
 
 # %% [markdown]
-# **Node degree distribution:**
+# **Movies graph**
+basic_stats(movies_graph)
+
+# %% [markdown]
+# **Combined graph**
+basic_stats(combined_graph)
+
+# %% [markdown]
+# #### Comments
+# First of all, there's clear difference between number of nodes in books graph and movies graph. The former one has 149 nodes, while the latter one has only 62 of them. Obviously, it was easier for Tolkien to write about some character (or at least mention them) than for Jackson to find nearly 150 cast members (not including background actors). This leads to the conclusion that book is over 2 times more rich in content in terms of number of characters.
+#
+#  It is also interesting that combined graph contains 155 nodes, so 6 more than books. It means that some characters were created by movie director, even though they did not appear in the original book.
+#
+# Another conclusion from the number of nodes and edges is that one has to read the books and watch the movies to have some basic knowledge about every character in the Lord of the Rings universe.
+#
+# One can also notice that our names list has 173 entries, while combined graph has around 15 nodes less. The missing nodes are listed below:
+set(lotr_names).difference(set(combined_graph.nodes))
+
+
+# %% [markdown]
+# Those nodes usually come from the movies and are non-canonical characters. They are not in the graph, because even in the movie script they were background characters and were not given any name. Articles in wiki probably use names created by fans or obtained from other sources (ex. director comments).
+
+# %% [markdown]
+# ### Node degree distribution
+# %% [markdown]
+# #### Analysis
+# Degree distribution will allow to see, what type of network was created. 
+
+# %% [markdown]
+# **Books graph**
 title = 'Degree distribution in book character graph'
 caption = 'Figure 1. Distribution of node degrees in LotR character graph connecting books.'
 nodes_distribution_barchart(books_graph, title, caption)
 
 # %% [markdown]
-# **Most connected nodes**
-report_characters(books_graph)
-
-# %% [markdown]
-# **Graph visualization.**
-caption = 'Figure 2. Visualization of the Lord of the Rings graph (book characters)'
-draw_fa2(books_graph, caption)
-
-# %% [markdown]
-# #### Movies graph
-# **The node & edge count:**
-basic_stats(movies_graph)
-
-# %% [markdown]
-# **Node degree distribution:**
+# **Movies graph**
 title = 'Degree distribution in book character graph'
-caption = 'Figure 3. Distribution of node degrees in LotR character graph connecting movies.'
+caption = 'Figure 2. Distribution of node degrees in LotR character graph connecting movies.'
 nodes_distribution_barchart(movies_graph, title, caption)
 
 # %% [markdown]
-# **Most connected nodes**
-report_characters(movies_graph)
-
-# %% [markdown]
-# **Graph visualization.**
-caption = 'Figure 4. Visualization of the Lord of the Rings graph (movie characters)'
-draw_fa2(movies_graph, caption)
-
-# %% [markdown]
-# #### Combined graph
-# **The node & edge count:**
-basic_stats(combined_graph)
-
-# %% [markdown]
-# **Node degree distribution:**
+# **Combined graph**
 title = 'Degree distribution in combined character graph'
-caption = 'Figure 5. Distribution of node degrees in LotR character graph connecting books and movies.'
+caption = 'Figure 3. Distribution of node degrees in LotR character graph connecting books and movies.'
 nodes_distribution_barchart(combined_graph, title, caption)
 
 # %% [markdown]
-# **Most connected nodes**
+# #### Comments
+# In general, one can think that the degree distributions follow the power-law, but it is not exactly the case here. For network to be scale-free, there should be big number of nodes with the lowest degree (i.e. 1) and it should exponentially decrease with the degree. Here, on every plot the highest count is around degree 10. It decreases later, but it does not happen smoothly. One can say, at most, that those networks are 'scale-free-like'. It makes perfect sense, though, as they are not typical social networks or semantic networks. They are artificially build using predefined chunk size. They may be considered as semi-social networks, as they are build using character interactions.
+#
+# It is also quite interesting that nodes in movie network have lower degree in general - they vary between 1 and around 60, while in books they go from 1 to around 120. This may be caused by the different nature of media - in a book a character can think about someone else who is not currently present with them. In a movie, there are no character thoughts and characters interact only with those present in the scene with them. Therefore, there is less 'mixing' of the characters, as they are contained in their scenes. Moreover, there are just more characters mentioned in the books, as seen in the node counts.
+
+# %% [markdown]
+# ### Most connected nodes
+# %% [markdown]
+# #### Analysis
+# Most connected nodes will show us, what are the most important characters in the trilogy.
+
+# %% [markdown]
+# **Books graph**
+report_characters(books_graph)
+
+# %% [markdown]
+# **Movies graph**
+report_characters(movies_graph)
+
+# %% [markdown]
+# **Combined graph**
 report_characters(combined_graph)
 
 # %% [markdown]
-# **Graph visualization.**
+# #### Comments
+# The most connected nodes in all the graphs are partially similar, but not as much as one may assume. All of them include some of the most important characters like four hobbits, Gandalf or Aragorn. Books are more focused on hobbits, i.e. Frodo, Sam, Merry and Pippin, as they occupy top positions in the ranking, while movies are more focused on Aragorn, Legolas, Gimli, Gandalf and Frodo - the team one usually sees on the movie posters. The biggest surprise is very high degree of Bilbo in books. It may be caused by the fact, the he is uncle of Frodo who mentions him quite often in the book. In movie there is no way to show character's thoughts, so Bilbo is not as highly ranked as in the book.
+
+# %% [markdown]
+# ### Graph visualization
+# %% [markdown]
+# #### Analysis
+# Visualizations will help to confirm previous results and also see, how the race of characters is distributed in the story.
+
+# %% [markdown]
+# **Books graph**
+caption = 'Figure 4. Visualization of the Lord of the Rings graph (book characters)'
+draw_fa2(books_graph, caption)
+
+# %% [markdown]
+# **Movies graph**
+caption = 'Figure 5. Visualization of the Lord of the Rings graph (movie characters)'
+draw_fa2(books_graph, caption)
+
+# %% [markdown]
+# **Combined graph**
 caption = 'Figure 6. Visualization of the Lord of the Rings graph (books and movies combined)'
 draw_fa2(combined_graph, caption)
 
 # %% [markdown]
-# ## Part 2 - Communities and sentiment
+# #### Comments
+# When it comes to visualizations, they are not as pretty as for the hero network created during the course. Even though nodes are colored according to the character races taken from wiki, one cannot find clear visual separation, communities or anything similar. This will be exposed only by using specific algorithms for communtiy detection in part 2.
+#
+# The graphs, however, confirm observations from the previous points - as books have more nodes and more connections between them, the graph looks way more dense than the movie one.
+#
+# Also, thanks to the coloring of nodes, it can be observed that, although there are many creature races in the book and movies, vast majority of the characters in the story are men or hobbits.
+
+# %% [markdown]
+# ## Analysis part 2 - Communities and sentiment
 # ### Communities analysis
 
 # In this section, the communities were found between the sources: the books, movies, and combined. This will help to visualise graphs again and analyse if the communities make sense according to our common knowledge of the topic.
@@ -487,7 +542,8 @@ def set_community_attribute(graph, attributes):
     '''
 
     for index in set(attributes.values()):
-        comm = {key: value for key, value in attributes.items() if value == index}
+        comm = {key: value for key, value in attributes.items()
+                if value == index}
         max_degree_node = max(dict(graph.subgraph(comm.keys()).degree()).items(),
                               key=lambda x: x[1])
 
@@ -532,7 +588,8 @@ def plot_community_distribution(source, communities, caption):
     plt.xlabel('Bin')
     plt.ylabel('Count')
     plt.grid()
-    plt.figtext(0.5, -0.1, caption, wrap=True, horizontalalignment='center', fontsize=12)
+    plt.figtext(0.5, -0.1, caption, wrap=True,
+                horizontalalignment='center', fontsize=12)
     plt.show()
 
 
@@ -605,8 +662,8 @@ def draw_community_fa2(graph, caption):
 
 caption = 'Figure {}. Visualization of the Lord of the Rings communities graph ({} characters)'
 [draw_community_fa2(comm[0], comm[1]) for comm in [
-    (books_graph, caption.format(11, 'books')),
-    (movies_graph, caption.format(10, 'movies')),
+    (books_graph, caption.format(10, 'books')),
+    (movies_graph, caption.format(11, 'movies')),
     (combined_graph, caption.format(12, 'combined')),
 ]]
 
@@ -620,6 +677,9 @@ caption = 'Figure {}. Visualization of the Lord of the Rings communities graph (
 
 
 def get_pickled_tokens(source):
+    '''
+    Loads tokens from specified source file
+    '''
     print('Loading pickled tokens')
     tokens = {}
     for filepath in [filepath for filepath in filepaths if source in filepath]:
@@ -629,6 +689,9 @@ def get_pickled_tokens(source):
 
 
 def create_community_text(tokens, graph, chunk_size=100):
+    '''
+    Returns dict with communities as keys and related text as values
+    '''
     communities_dict = nx.get_node_attributes(graph, 'community')
     communities_texts = {key: [] for key in
                          set(nx.get_node_attributes(graph, 'community').values())}
@@ -657,7 +720,8 @@ def calculate_tf_idf(dict_texts, source):
     tf_idf_communities = {}
     for index, current_text in tqdm(dict_texts.items()):
         tf_idf = FreqDist(current_text)
-        other_texts = {key: dict_texts[key] for key in dict_texts.keys() if key != index}
+        other_texts = {key: dict_texts[key]
+                       for key in dict_texts.keys() if key != index}
 
         for word in tqdm(tf_idf.keys()):
             counter = 0
@@ -679,7 +743,8 @@ books_tokens = get_pickled_tokens('book')
 movies_tokens = get_pickled_tokens('movie')
 
 books_communities_texts = create_community_text(books_tokens, books_graph, 100)
-movies_communities_texts = create_community_text(movies_tokens, movies_graph, 50)
+movies_communities_texts = create_community_text(
+    movies_tokens, movies_graph, 50)
 
 books_tf_idf = calculate_tf_idf(books_communities_texts, 'book')
 movies_tf_idf = calculate_tf_idf(movies_communities_texts, 'movie')
@@ -763,19 +828,24 @@ def calculate_rolling_sentiment(source, chunk_size=300):
         rolling_sentiment_part = pd.DataFrame()
         for index, chunk in enumerate(get_chunks(part, chunk_size)):
             chunk_tokens = FreqDist(chunk)
-            sentiment = pd.DataFrame.from_dict(chunk_tokens, orient='index').reset_index()
+            sentiment = pd.DataFrame.from_dict(
+                chunk_tokens, orient='index').reset_index()
             sentiment.columns = ['word', 'count']
             sentiment['chunk'] = index
             sentiment = sentiment.merge(sentiment_values, on=['word'])
             sentiment['mean'] = (
                 sentiment['happiness_average'] * sentiment['count']).sum() / sentiment['count'].sum()
-            sentiment = sentiment[['chunk', 'mean']].groupby('chunk').mean().reset_index()
-            rolling_sentiment_part = pd.concat([rolling_sentiment_part, sentiment])
+            sentiment = sentiment[['chunk', 'mean']].groupby(
+                'chunk').mean().reset_index()
+            rolling_sentiment_part = pd.concat(
+                [rolling_sentiment_part, sentiment])
 
         rolling_sentiment_part['part'] = part_index
-        rolling_sentiment = pd.concat([rolling_sentiment, rolling_sentiment_part])
+        rolling_sentiment = pd.concat(
+            [rolling_sentiment, rolling_sentiment_part])
 
-    pickle.dump(rolling_sentiment, io.open(f'{source}_{chunk_size}_sent.p', 'wb'))
+    pickle.dump(rolling_sentiment, io.open(
+        f'{source}_{chunk_size}_sent.p', 'wb'))
     return rolling_sentiment
 
 
@@ -788,6 +858,9 @@ movie_sentiment = calculate_rolling_sentiment('movie', 50)
 # %%
 
 def plot_sentiment(book_sentiment, movie_sentiment, caption):
+    '''
+    Creates book & sentiment plots with provied caption
+    '''
     fig = plt.figure(figsize=(15, 10))
     fig.suptitle(caption)
     plots = [311, 312, 313]
@@ -799,36 +872,44 @@ def plot_sentiment(book_sentiment, movie_sentiment, caption):
         book_set = book_sentiment.loc[book_sentiment['part'] == index]
         movie_set = movie_sentiment.loc[movie_sentiment['part'] == index]
         # create line plot of y1(x)
-        line1 = ax1.plot(book_set['chunk'], book_set['mean'], '#c71671', alpha=0.6)
+        line1 = ax1.plot(book_set['chunk'],
+                         book_set['mean'], '#c71671', alpha=0.6)
         ax1.set_xlabel('Book chunk')
         ax1.set_ylabel('Sentiment')
 
         ax2 = ax1.twiny()
 
         # create line plot of y2(x)
-        line2 = ax2.plot(movie_set['chunk'], movie_set['mean'], '#169ec7', alpha=0.6)
+        line2 = ax2.plot(movie_set['chunk'],
+                         movie_set['mean'], '#169ec7', alpha=0.6)
         ax2.set_xlabel('Movie chunk')
         # add a legend, and position it on the upper right
 
         if index == 2:
-            plt.legend((line1[0], line2[0]), ('Book', 'Movie'), loc='lower right')
+            plt.legend((line1[0], line2[0]),
+                       ('Book', 'Movie'), loc='lower right')
 
     plt.tight_layout()
     plt.show()
 
 
 # %% [markdown]
-# #
+#
 # Below, the comparison for each part of the trilogy in both sources was presented. The movie sentiment fluctuates much more than the book one - probably because of the amount of words in each source. Nonetheless, the lines are relatively aligned, especially, especially during the climaxes at the end of first and third part of the trilogy. What is worth mentioning is the fact that there is no guarantee that fact in books and movies are presented at the same order. Moreover, the viewers feel the sentiment from the movie frames mainly, thus not every moment in the films might be properly interpreted by the average sentiment. The sudden drops in sentiment at the end are caused by small size of the last chunk - chunks are not evenly sized.
 
-plot_sentiment(book_sentiment, movie_sentiment, 'Sentiment over time for movie scripts and book texts.')
+plot_sentiment(book_sentiment, movie_sentiment,
+               'Sentiment over time for movie scripts and book texts.')
 
 # %% [markdown]
 # ### Communities sentiment
 #
 # The sentiment was also calculated for each of the community. It was creating using previously generated chunks using the same LabMT wordlist. The weighted average was calculated again for each community and was presented in the tables below.
 
+
 def calculate_communities_sentiment(community_text):
+    '''
+    Calculates sentiment based on given community text
+    '''
     sentiment_url = 'https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0026752.s001&type=supplementary'
     sentiment_values = pd.read_csv(sentiment_url, skiprows=3, delimiter='\t')[
         ['word', 'happiness_average']]
@@ -836,12 +917,15 @@ def calculate_communities_sentiment(community_text):
     sentiment_df = pd.DataFrame()
     for comm, words in community_text.items():
         chunk_tokens = FreqDist(words)
-        sentiment = pd.DataFrame.from_dict(chunk_tokens, orient='index').reset_index()
+        sentiment = pd.DataFrame.from_dict(
+            chunk_tokens, orient='index').reset_index()
         sentiment.columns = ['word', 'count']
         sentiment['community'] = comm
         sentiment = sentiment.merge(sentiment_values, on=['word'])
-        sentiment['mean'] = (sentiment['happiness_average'] * sentiment['count']).sum() / sentiment['count'].sum()
-        sentiment = sentiment[['community', 'mean']].groupby('community').mean().reset_index()
+        sentiment['mean'] = (sentiment['happiness_average'] *
+                             sentiment['count']).sum() / sentiment['count'].sum()
+        sentiment = sentiment[['community', 'mean']].groupby(
+            'community').mean().reset_index()
         sentiment_df = pd.concat([sentiment_df, sentiment])
 
     sentiment_df = sentiment_df.groupby(['community']).mean().reset_index()
@@ -863,46 +947,12 @@ calculate_communities_sentiment(movies_communities_texts)
 
 
 # %% [markdown]
-# #### Comments and discussion on the results of graph analysis
-# %% [markdown]
-# ##### Number of nodes and edges
-# There are several observations which can be made from the results.
+# ## Discussion
+# Our results expose the most important differences and indicate biggest similarities between books and movies. While most of them are not surprising, some of them are thought provoking, ex. how big is the difference between number of characters in the books and movies.
 #
-# First of all, there's clear difference between number of nodes in books graph and movies graph. The former one has 149 nodes, while the latter one has only 62 of them. Obviously, it was easier for Tolkien to write about some character (or at least mention them) than for Jackson to find nearly 150 cast members (not including background actors). This leads to the conclusion that book is over 2 times more rich in content in terms of number of characters.
-#
-#  It is also interesting that combined graph contains 155 nodes, so 6 more than books. It means that some character were created by move director, even though they did not appear in the original book.
-#
-# Another conclusion from the number of nodes and edges is that one has to read the books and watch the movies to have some basic knowledge about every character in the Lord of the Rings universe.
-#
-# One can also notice that our names list has 173 entries, while combined graph has around 15 nodes less. The missing nodes are listed below:
-set(lotr_names).difference(set(combined_graph.nodes))
-
-
-# %% [markdown]
-# Those nodes usually come from the movies and are non-canonical characters. They are not in the graph, because even in the movie script they were background characters and were not given any name. Articles in wiki probably use names created by fans or obtained from other sources (ex. director comments).
-
-# %% [markdown]
-# ##### Degree distribution
-# In general, one can think that the degree distributions follow the power-law, but it is not exactly the case here. For network to be scale-free, there should be big number of nodes with the lowest degree (i.e. 1) and it should exponentially decrease with the degree. Here, on every plot the highest count is around degree 10. It decreases later, but it does not happen smoothly. One can say, at most, that those networks are 'scale-free-like'. It makes perfect sense, though, as they are not typical social networks or semantic networks. They are artificially build using predefined chunk size. They may be considered as semi-social networks, as they are build using character interactions.
-#
-# It is also quite interesting that nodes in movie network have lower degree in general - they vary between 1 and around 60, while in books they go from 1 to around 120. This may be caused by the different nature of media - in a book a character can think about someone else who is not currently present with them. In a movie, there are no character thoughts and characters interact only with those present in the scene with them. Therefore, there is less 'mixing' of the characters, as they are contained in their scenes. Moreover, there are just more characters mentioned in the books, as seen in the node counts.
-
-# %% [markdown]
-# ##### Most connected nodes
-# The most connected nodes in all the graphs are partially similar, but not as much as one may assume. All of them include some of the most important characters like four hobbits, Gandalf or Aragorn. Books are more focused on hobbits, i.e. Frodo, Sam, Merry and Pippin, as they occupy top positions in the ranking, while movies are more focused on Aragorn, Legolas, Gimli, Gandalf and Frodo - the team one usually sees on the movie posters. The biggest surprise is very high degree of Bilbo in books. It may be caused by the fact, the he is uncle of Frodo who mentions him quite often in the book. In movie there is no way to show character's thoughts, so Bilbo is not as highly ranked as in the book.
-# %% [markdown]
-# ##### Graphs visualization
-# When it comes to visualizations, they are not as pretty as for the hero network created during the course. Even though nodes are colored according to the character races taken from wiki, one cannot find clear separation, communities or anything similar. This is caused by the way of narration in the books or movies - everything was happening simultaneously and characters were mixed together. There was no 'Frodo point of view' VS 'Sauron point of view', which would help in separating the opposite sides of the conflict.
-#
-# The graphs, however, confirm observations from the previous points - as books have more nodes and more connections between them, the graph looks way more dense than the movie one.
-#
-# Also, thanks to the coloring of nodes, it can be observed that, although there are many creature races in the book and movies, vast majority of the characters in the story are men or hobbits.
-
-# %% [markdown]
-# ##### Other thoughts
-# To provide more interesting network analysis, more manual work with extended domain knowledge is required. Unfortunately, wiki is not complete, i.e. there are very few common attributes as race for every character. If there were additional information (ex. conflict side), more interesting insights would be possible to derive. The above analysis still enabled to understand the differences between book and movies, but definitely can be extended by providing additional data. Also, it was a bit disappointing that there were no clear hubs in the graph which would indicate different groups, ex. 'the ring team', wizards, or anything else. Most probably it was caused by the way the analysis was performed. It may be worth checking, how the network would look if it was created using wiki article analysis or by making a weighted edges and increasing the weight each time two characters are connected. Hopefully, that approach can help in finding reasonable communities.
+# To provide more interesting network analysis, more manual work with extended domain knowledge is required. Unfortunately, wiki is not complete, i.e. there are very few common attributes as race for every character. If there were additional information (ex. conflict side), more interesting insights would be possible to derive. The above analysis still enabled to understand the differences between book and movies, but definitely can be extended by providing additional data. 
 
 # %% [markdown]
 # ## Contributions
-# - Part 1 was done by Piotr Ładoński
-# - Part 2 was done by Paweł Darulewski
+# - Piotr Ładoński: gathering & cleaning the data, analysis of graphs in part 1
+# - Paweł Darulewski: communities & sentiment analysis in part 2
