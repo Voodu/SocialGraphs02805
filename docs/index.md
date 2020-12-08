@@ -50,11 +50,12 @@ That analysis gave us good understanding of the network, connections between nod
 #### Basic analysis
 
 -   Node/Edge counts
-    | network | node count | edge count |
+
+    | network  | node count | edge count |
     | -------- | ---------- | ---------- |
-    | books | 129 | 1871 |
-    | movies | 62 | 770 |
-    | combined | 155 | 2136 |
+    | books    | 129        | 1871       |
+    | movies   | 62         | 770        |
+    | combined | 155        | 2136       |
 
 -   Node degree distributions:
 
