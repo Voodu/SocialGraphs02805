@@ -694,7 +694,7 @@ def create_wordcloud(text, cmap, caption, mask=None):
     wordcloud = WordCloud(
         # max_font_size=40,
         collocations=False,
-        background_color='#38556b',
+        background_color='#000000',
         colormap=cmap,
         mask=mask
     ).generate(text)
@@ -732,7 +732,7 @@ def create_communities_wordclouds(tf_idf, cmap, source, mask):
 
 mask = np.array(Image.open(os.path.join('data', 'mask.png')))
 
-create_communities_wordclouds(books_tf_idf, 'PuRd', 'books', mask)
+create_communities_wordclouds(books_tf_idf, 'Wistia', 'books', mask)
 
 
 # %% [markdown]
