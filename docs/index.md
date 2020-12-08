@@ -45,6 +45,21 @@ Cillum laboris veniam ad dolor culpa eiusmod sit minim anim adipisicing labore i
 #### TF-IDF wordclouds 
 ![Wordclouds](images/wordclouds.jpg "Wordclouds")
 
+
+### Comments
+Mollit esse ipsum sunt consequat officia quis et duis dolore. Adipisicing in id ea deserunt occaecat velit consectetur Lorem. Quis esse magna voluptate mollit. Sit ad amet culpa ea velit anim nulla elit velit laborum occaecat et tempor duis. Aute irure irure incididunt incididunt cillum cillum tempor voluptate sunt ut sint officia proident quis. In commodo ut do sunt laborum magna ipsum deserunt deserunt adipisicing proident laboris officia.
+
+
+## Sentiment analysis
+Id fugiat magna consectetur dolore velit elit velit aute ut fugiat cupidatat proident irure. Minim exercitation mollit ipsum culpa dolor id commodo. Nisi sit ea minim est minim. Do anim fugiat veniam ad incididunt do qui laboris sunt. Cupidatat ipsum occaecat sunt ea dolore labore irure cillum est veniam veniam. Ipsum consequat velit labore enim tempor reprehenderit velit. Ea nisi sunt laborum ea reprehenderit in laboris enim magna exercitation commodo sunt magna.
+### Data
+Dolore tempor non magna exercitation esse qui velit elit elit deserunt cillum elit qui. Officia consequat ex Lorem sunt exercitation adipisicing deserunt quis aute. Cupidatat magna nostrud fugiat nisi laborum reprehenderit adipisicing ex. Reprehenderit eiusmod amet aliquip et laborum irure deserunt officia veniam sint laboris. Ad elit cillum nostrud irure ea ad sit officia occaecat in adipisicing veniam officia. Et amet velit commodo minim reprehenderit Lorem et eu voluptate culpa occaecat veniam.
+### Procedure
+Ut occaecat qui enim officia irure minim. Fugiat sit magna eu Lorem laborum laboris. Aliquip eu qui consequat do magna sit eiusmod excepteur nulla nisi esse. Culpa cillum quis duis do commodo id cillum eu qui veniam laboris.
+### Results
+Aliquip id nisi esse nisi nisi do nisi nulla fugiat cillum et. Adipisicing dolor velit aliqua quis dolor Lorem fugiat cillum tempor incididunt. Irure ea sunt quis culpa laboris incididunt veniam reprehenderit laborum minim sint. Veniam culpa amet tempor occaecat nostrud do nostrud ut ullamco amet deserunt. In sit Lorem laboris qui duis deserunt. Deserunt ea adipisicing voluptate voluptate sit exercitation aute adipisicing pariatur occaecat est pariatur.
+
+
 #### Sentiment over time
 ![Sentiment over time](images/plot_sentiment.png "Sentiment over time")
 
@@ -69,18 +84,6 @@ Cillum laboris veniam ad dolor culpa eiusmod sit minim anim adipisicing labore i
 | 4 | saruman   | 5.38325281640115  |
 | 2 | gandalf   | 5.371323242476146 |
 
-### Comments
-Mollit esse ipsum sunt consequat officia quis et duis dolore. Adipisicing in id ea deserunt occaecat velit consectetur Lorem. Quis esse magna voluptate mollit. Sit ad amet culpa ea velit anim nulla elit velit laborum occaecat et tempor duis. Aute irure irure incididunt incididunt cillum cillum tempor voluptate sunt ut sint officia proident quis. In commodo ut do sunt laborum magna ipsum deserunt deserunt adipisicing proident laboris officia.
-
-
-## Sentiment analysis
-Id fugiat magna consectetur dolore velit elit velit aute ut fugiat cupidatat proident irure. Minim exercitation mollit ipsum culpa dolor id commodo. Nisi sit ea minim est minim. Do anim fugiat veniam ad incididunt do qui laboris sunt. Cupidatat ipsum occaecat sunt ea dolore labore irure cillum est veniam veniam. Ipsum consequat velit labore enim tempor reprehenderit velit. Ea nisi sunt laborum ea reprehenderit in laboris enim magna exercitation commodo sunt magna.
-### Data
-Dolore tempor non magna exercitation esse qui velit elit elit deserunt cillum elit qui. Officia consequat ex Lorem sunt exercitation adipisicing deserunt quis aute. Cupidatat magna nostrud fugiat nisi laborum reprehenderit adipisicing ex. Reprehenderit eiusmod amet aliquip et laborum irure deserunt officia veniam sint laboris. Ad elit cillum nostrud irure ea ad sit officia occaecat in adipisicing veniam officia. Et amet velit commodo minim reprehenderit Lorem et eu voluptate culpa occaecat veniam.
-### Procedure
-Ut occaecat qui enim officia irure minim. Fugiat sit magna eu Lorem laborum laboris. Aliquip eu qui consequat do magna sit eiusmod excepteur nulla nisi esse. Culpa cillum quis duis do commodo id cillum eu qui veniam laboris.
-### Results
-Aliquip id nisi esse nisi nisi do nisi nulla fugiat cillum et. Adipisicing dolor velit aliqua quis dolor Lorem fugiat cillum tempor incididunt. Irure ea sunt quis culpa laboris incididunt veniam reprehenderit laborum minim sint. Veniam culpa amet tempor occaecat nostrud do nostrud ut ullamco amet deserunt. In sit Lorem laboris qui duis deserunt. Deserunt ea adipisicing voluptate voluptate sit exercitation aute adipisicing pariatur occaecat est pariatur.
 ### Comments
 Veniam aute incididunt velit amet occaecat commodo. Veniam occaecat voluptate aliqua ipsum velit labore consectetur laborum. Consequat ullamco fugiat incididunt dolor elit. Officia cupidatat cupidatat dolore ut. Sit enim velit pariatur adipisicing labore amet exercitation. Labore culpa velit deserunt qui elit mollit ex eiusmod.
 
