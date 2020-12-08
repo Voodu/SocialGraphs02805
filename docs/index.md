@@ -46,6 +46,7 @@ Further, we examined the communities exisiting in the network. #TODO
 That analysis gave us good understanding of the network, connections between nodes, and its overall shape.
 
 ### Results
+
 #### Basic analysis
 
 -   Node/Edge counts
@@ -62,7 +63,7 @@ That analysis gave us good understanding of the network, connections between nod
 -   Top characters
     <table>
     <tr><th>Books</th><th>Movies</th><th>Combined</th></tr><tr><td>
-    
+
     | Name    | Degree |
     | ------- | ------ |
     | Gandalf | 108    |
@@ -70,9 +71,9 @@ That analysis gave us good understanding of the network, connections between nod
     | Pippin  | 103    |
     | Merry   | 99     |
     | Horn    | 99     |
-    
+
     </td><td>
-    
+
     | Name    | Degree |
     | ------- | ------ |
     | Aragorn | 59     |
@@ -80,9 +81,9 @@ That analysis gave us good understanding of the network, connections between nod
     | Gimli   | 56     |
     | Gandalf | 52     |
     | Frodo   | 51     |
-    
+
     </td><td>
-    
+
     | Name    | Degree |
     | ------- | ------ |
     | Gandalf | 120    |
@@ -90,18 +91,19 @@ That analysis gave us good understanding of the network, connections between nod
     | Frodo   | 109    |
     | Merry   | 106    |
     | Horn    | 102    |
+
     </td></tr></table>
 
-   - Race-colored graphs
-     
-     **Books**
-     ![Books race graph](images/basic_vis4.png 'Books race graph')
+-   Race-colored graphs
 
-     **Movies**
-     ![Movies race graph](images/basic_vis5.png 'Movies race graph')
+    **Books**
+    ![Books race graph](images/basic_vis4.png 'Books race graph')
 
-     **Combined**
-     ![Combined race graph](images/basic_vis5.png 'Combined race graph')
+    **Movies**
+    ![Movies race graph](images/basic_vis5.png 'Movies race graph')
+
+    **Combined**
+    ![Combined race graph](images/basic_vis5.png 'Combined race graph')
 
 #### Community distribution
 
@@ -181,18 +183,12 @@ Reprehenderit exercitation laboris cillum sit. Sunt do reprehenderit ut Lorem do
 
 ### Downloads & sources
 
-[Jupyter notebook]()
+[Jupyter notebook](https://nbviewer.jupyter.org/github/Voodu/SocialGraphs02805/blob/main/Project/main.ipynb)
 
-[Dataset]()
+[Dataset (list with names)](https://github.com/Voodu/SocialGraphs02805/blob/main/Project/data/characters.csv)
 
-Movie scripts:
-
--   [Part 1]()
--   [Part 2]()
--   [Part 3]()
-
-Books:
-
--   [Part 1]()
--   [Part 2]()
--   [Part 3]()
+| Part | Movie script                                                                             | Book                                                                          |
+| ---- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 1    | [Link](https://www.imsdb.com/scripts/Lord-of-the-Rings-Fellowship-of-the-Ring,-The.html) | [Link](http://ae-lib.org.ua/texts-c/tolkien__the_lord_of_the_rings_1__en.htm) |
+| 2    | [Link](https://www.imsdb.com/scripts/Lord-of-the-Rings-The-Two-Towers.html)              | [Link](http://ae-lib.org.ua/texts-c/tolkien__the_lord_of_the_rings_2__en.htm) |
+| 3    | [Link](https://www.imsdb.com/scripts/Lord-of-the-Rings-Return-of-the-King.html)          | [Link](http://ae-lib.org.ua/texts-c/tolkien__the_lord_of_the_rings_3__en.htm) |
