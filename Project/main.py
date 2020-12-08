@@ -268,7 +268,7 @@ combined_graph = nx.compose(books_graph, movies_graph)
 
 
 # %% [markdown]
-# ## Analysis part 1 - graphs and character network
+# ## Analysis part 1 - Graphs and character network
 
 # %% [markdown]
 # We decided to perform analysis on several graph combinations and compare the results:
@@ -662,8 +662,8 @@ def draw_community_fa2(graph, caption):
 
 caption = 'Figure {}. Visualization of the Lord of the Rings communities graph ({} characters)'
 [draw_community_fa2(comm[0], comm[1]) for comm in [
-    (books_graph, caption.format(11, 'books')),
-    (movies_graph, caption.format(10, 'movies')),
+    (books_graph, caption.format(10, 'books')),
+    (movies_graph, caption.format(11, 'movies')),
     (combined_graph, caption.format(12, 'combined')),
 ]]
 
@@ -677,6 +677,9 @@ caption = 'Figure {}. Visualization of the Lord of the Rings communities graph (
 
 
 def get_pickled_tokens(source):
+    '''
+    Loads tokens from specified source file
+    '''
     print('Loading pickled tokens')
     tokens = {}
     for filepath in [filepath for filepath in filepaths if source in filepath]:
@@ -686,6 +689,9 @@ def get_pickled_tokens(source):
 
 
 def create_community_text(tokens, graph, chunk_size=100):
+    '''
+    Returns dict with communities as keys and related text as values
+    '''
     communities_dict = nx.get_node_attributes(graph, 'community')
     communities_texts = {key: [] for key in
                          set(nx.get_node_attributes(graph, 'community').values())}
@@ -852,6 +858,9 @@ movie_sentiment = calculate_rolling_sentiment('movie', 50)
 # %%
 
 def plot_sentiment(book_sentiment, movie_sentiment, caption):
+    '''
+    Creates book & sentiment plots with provied caption
+    '''
     fig = plt.figure(figsize=(15, 10))
     fig.suptitle(caption)
     plots = [311, 312, 313]
@@ -885,7 +894,7 @@ def plot_sentiment(book_sentiment, movie_sentiment, caption):
 
 
 # %% [markdown]
-# #
+#
 # Below, the comparison for each part of the trilogy in both sources was presented. The movie sentiment fluctuates much more than the book one - probably because of the amount of words in each source. Nonetheless, the lines are relatively aligned, especially, especially during the climaxes at the end of first and third part of the trilogy. What is worth mentioning is the fact that there is no guarantee that fact in books and movies are presented at the same order. Moreover, the viewers feel the sentiment from the movie frames mainly, thus not every moment in the films might be properly interpreted by the average sentiment. The sudden drops in sentiment at the end are caused by small size of the last chunk - chunks are not evenly sized.
 
 plot_sentiment(book_sentiment, movie_sentiment,
@@ -898,6 +907,9 @@ plot_sentiment(book_sentiment, movie_sentiment,
 
 
 def calculate_communities_sentiment(community_text):
+    '''
+    Calculates sentiment based on given community text
+    '''
     sentiment_url = 'https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0026752.s001&type=supplementary'
     sentiment_values = pd.read_csv(sentiment_url, skiprows=3, delimiter='\t')[
         ['word', 'happiness_average']]
