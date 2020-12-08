@@ -459,6 +459,7 @@ caption = 'Figure 6. Visualization of the Lord of the Rings graph (books and mov
 draw_fa2(combined_graph, caption)
 
 # %% [markdown]
+# ## Part 2 - Communities and sentiment
 # ### Communities analysis
 
 # In this section, the communities were found between the sources: the books, movies, and combined. This will help to visualise graphs again and analyse if the communities make sense according to our common knowledge of the topic.
@@ -610,7 +611,12 @@ caption = 'Figure {}. Visualization of the Lord of the Rings communities graph (
 ]]
 
 
-# %%
+# %% [markdown]
+# ### TF-IDF Wordclouds
+
+# Similarly to the previous project, the TF-IDF wordclouds were generated for each community. This time, there is no possibility to split the webpages between characters because all of them are mentioned in one long text. For this to work, the texts were again split into chunks. If a certain name of character were present in the chunk, the chunk was assigned to the community text. Then TF-IDF was calculated using those communities chunks. After that, the term frequencies were visualised using the wordclouds with a ring mask. The community chunks were created for both sources, however, the clouds were generated only for book. Both sets of community sources will be used later to present the community sentiment in books and movies.
+
+# The following formula was used: $tf(t, d) * idf(t, D) = f_{t, d} * (log(N / 1+n_t) + 1)$. The smooth logarithmic function was chosen because of its slow descending curve. The weights in tf-idf filter out the common terms, hence the value for base defines the "speed" of filtering out those terms.
 
 
 def get_pickled_tokens(source):
@@ -672,7 +678,7 @@ def calculate_tf_idf(dict_texts, source):
 books_tokens = get_pickled_tokens('book')
 movies_tokens = get_pickled_tokens('movie')
 
-books_communities_texts = create_community_text(books_tokens, books_graph, 200)
+books_communities_texts = create_community_text(books_tokens, books_graph, 100)
 movies_communities_texts = create_community_text(movies_tokens, movies_graph, 50)
 
 books_tf_idf = calculate_tf_idf(books_communities_texts, 'book')
@@ -718,15 +724,15 @@ def create_communities_wordclouds(tf_idf, cmap, source, mask):
     for index in tf_idf.keys():
         text = create_texts_from_list(tf_idf[index])
         create_wordcloud(
-            text, cmap, f'Wordcloud for {source} community: "{index}"', mask)
+            text, cmap, f'Wordcloud for {source} community: {index.title()}', mask)
 
 
-# %%
+# %% [markdown]
+# For presentation purposes to show communities in one source, only the book communities were chosen to present wordlcouds. Not every wordcloud seems to be significant, however, for "Aragorn" the whole Fellowship of the Ring is mentioned. For "Saruman" words like "eye", "old", "Isengard", "orc" are present. For "Frodo" other hobbits are mentioned: "Bilbo", "Pippin", "Sam".
 
 mask = np.array(Image.open(os.path.join('data', 'mask.png')))
 
 create_communities_wordclouds(books_tf_idf, 'PuRd', 'books', mask)
-# create_communities_wordclouds(movies_tf_idf, 'YlGnBu', 'movies', mask)
 
 
 # %% [markdown]
@@ -772,14 +778,14 @@ def calculate_rolling_sentiment(source, chunk_size=300):
     pickle.dump(rolling_sentiment, io.open(f'{source}_{chunk_size}_sent.p', 'wb'))
     return rolling_sentiment
 
-# %%
 
+# %%
 
 book_sentiment = calculate_rolling_sentiment('book', 200)
 movie_sentiment = calculate_rolling_sentiment('movie', 50)
 
-# %%
 
+# %%
 
 def plot_sentiment(book_sentiment, movie_sentiment, caption):
     fig = plt.figure(figsize=(15, 10))
@@ -807,6 +813,7 @@ def plot_sentiment(book_sentiment, movie_sentiment, caption):
         if index == 2:
             plt.legend((line1[0], line2[0]), ('Book', 'Movie'), loc='lower right')
 
+    plt.tight_layout()
     plt.show()
 
 
@@ -819,35 +826,40 @@ plot_sentiment(book_sentiment, movie_sentiment, 'Sentiment over time for movie s
 # %% [markdown]
 # ### Communities sentiment
 #
+# The sentiment was also calculated for each of the community. It was creating using previously generated chunks using the same LabMT wordlist. The weighted average was calculated again for each community and was presented in the tables below.
 
 def calculate_communities_sentiment(community_text):
     sentiment_url = 'https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0026752.s001&type=supplementary'
     sentiment_values = pd.read_csv(sentiment_url, skiprows=3, delimiter='\t')[
         ['word', 'happiness_average']]
 
-    sentiment = pd.DataFrame()
+    sentiment_df = pd.DataFrame()
     for comm, words in community_text.items():
-        community_df = pd.DataFrame(words, columns=['word'])
-        community_df['community'] = comm
-        community_df = community_df.merge(sentiment_values, how='left', on='word')
-        sentiment = pd.concat([sentiment, community_df])
+        chunk_tokens = FreqDist(words)
+        sentiment = pd.DataFrame.from_dict(chunk_tokens, orient='index').reset_index()
+        sentiment.columns = ['word', 'count']
+        sentiment['community'] = comm
+        sentiment = sentiment.merge(sentiment_values, on=['word'])
+        sentiment['mean'] = (sentiment['happiness_average'] * sentiment['count']).sum() / sentiment['count'].sum()
+        sentiment = sentiment[['community', 'mean']].groupby('community').mean().reset_index()
+        sentiment_df = pd.concat([sentiment_df, sentiment])
 
-    sentiment = sentiment.groupby(['community']).mean().reset_index()
-    sentiment = sentiment.sort_values('happiness_average', ascending=False)
+    sentiment_df = sentiment_df.groupby(['community']).mean().reset_index()
+    sentiment_df = sentiment_df.sort_values('mean', ascending=False)
 
-    return sentiment
+    return sentiment_df
 
 
-# %%
+# %% [markdown]
+# The happiest community throughout the books is "Frodo", probably because of the happy moments with his friends, positive beginning and ending of the story. The most negative is "Horn" where characters like Gollum, Muzgrash, Sagrat (orcs) indicates negative feelings during battles.
 
 calculate_communities_sentiment(books_communities_texts)
 
 
-# %%
+# %% [markdown]
+# As far as movies are concerned, the situation is very similar to the books. What is interesting, the saddest community is represented by Gandalf – despite his affiliation to this community, there are also many orcs and Gollum which presents negative impact on the sentiment for their chunks of texts.
 
 calculate_communities_sentiment(movies_communities_texts)
-
-
 
 
 # %% [markdown]
@@ -860,7 +872,7 @@ calculate_communities_sentiment(movies_communities_texts)
 #
 #  It is also interesting that combined graph contains 155 nodes, so 6 more than books. It means that some character were created by move director, even though they did not appear in the original book.
 #
-# Another conclusion from the number of nodes and edges is that one has to read the books and watch the movies to have some basic knowledge about every character in the Lort of the Rings universe.
+# Another conclusion from the number of nodes and edges is that one has to read the books and watch the movies to have some basic knowledge about every character in the Lord of the Rings universe.
 #
 # One can also notice that our names list has 173 entries, while combined graph has around 15 nodes less. The missing nodes are listed below:
 set(lotr_names).difference(set(combined_graph.nodes))
