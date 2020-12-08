@@ -153,8 +153,7 @@ Aliquip id nisi esse nisi nisi do nisi nulla fugiat cillum et. Adipisicing dolor
 ![Sentiment over time](images/plot_sentiment.png 'Sentiment over time')
 
 #### Sentiment for communities
-
-##### Books communities sentiment
+<table><tr><th>Books</th><th>Movies</th></tr><tr><td>
 
 |     | community | mean sentiment     |
 | --- | --------- | ------------------ |
@@ -163,8 +162,7 @@ Aliquip id nisi esse nisi nisi do nisi nulla fugiat cillum et. Adipisicing dolor
 | 1   | denethor  | 5.478623393959455  |
 | 4   | saruman   | 5.475947778166416  |
 | 3   | horn      | 5.3939784227845555 |
-
-##### Movies communities sentiment
+</td><td>
 
 |     | community | mean sentiment    |
 | --- | --------- | ----------------- |
@@ -173,6 +171,7 @@ Aliquip id nisi esse nisi nisi do nisi nulla fugiat cillum et. Adipisicing dolor
 | 0   | aragorn   | 5.388042271911186 |
 | 4   | saruman   | 5.38325281640115  |
 | 2   | gandalf   | 5.371323242476146 |
+</td></tr></table>
 
 ### Comments
 
