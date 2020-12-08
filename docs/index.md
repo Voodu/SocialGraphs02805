@@ -19,6 +19,9 @@ There are two main goals of the project:
 
 ## Graph analysis
 Ullamco incididunt qui adipisicing culpa nisi irure adipisicing ad ut nulla consequat proident magna ipsum. Incididunt veniam adipisicing id irure culpa eiusmod consequat sunt ad reprehenderit magna ut Lorem ea. Non ipsum mollit exercitation cillum id nostrud dolor irure. Esse pariatur eu incididunt tempor ipsum duis. Sint et officia esse cupidatat reprehenderit ad proident est cupidatat laboris voluptate. Mollit sint tempor magna reprehenderit elit tempor excepteur. Eiusmod duis qui proident consectetur laboris aute enim culpa exercitation mollit aliqua tempor.
+
+![Books community graph](https://github.com/Voodu/SocialGraphs02805/blob/webpage/docs/images/graph_comm_books.png?raw=true "Books community graph")
+
 ### Data
 Esse reprehenderit do reprehenderit sint esse. Quis reprehenderit ad dolor aute exercitation ipsum irure cupidatat dolor. Tempor consequat consequat qui pariatur Lorem amet.
 ### Procedure
