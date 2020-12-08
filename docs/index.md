@@ -20,14 +20,55 @@ There are two main goals of the project:
 ## Graph analysis
 Ullamco incididunt qui adipisicing culpa nisi irure adipisicing ad ut nulla consequat proident magna ipsum. Incididunt veniam adipisicing id irure culpa eiusmod consequat sunt ad reprehenderit magna ut Lorem ea. Non ipsum mollit exercitation cillum id nostrud dolor irure. Esse pariatur eu incididunt tempor ipsum duis. Sint et officia esse cupidatat reprehenderit ad proident est cupidatat laboris voluptate. Mollit sint tempor magna reprehenderit elit tempor excepteur. Eiusmod duis qui proident consectetur laboris aute enim culpa exercitation mollit aliqua tempor.
 
-![Books community graph](images/graph_comm_books.png?raw=true "Books community graph")
-
 ### Data
 Esse reprehenderit do reprehenderit sint esse. Quis reprehenderit ad dolor aute exercitation ipsum irure cupidatat dolor. Tempor consequat consequat qui pariatur Lorem amet.
+
 ### Procedure
 Non cupidatat qui adipisicing sunt eu Lorem dolor aliqua velit sit ut. Eu ex velit irure voluptate. Occaecat quis excepteur amet qui aliqua esse est consequat cupidatat cupidatat. Ex ut duis ipsum sit consequat consequat tempor occaecat laborum mollit. Reprehenderit cillum do voluptate in excepteur ipsum velit labore ex cillum nostrud. Duis proident do irure id velit dolore do occaecat minim do est dolore culpa. Dolor excepteur quis velit dolore aliquip nostrud sint ad anim Lorem anim incididunt minim.
+
 ### Results
 Cillum laboris veniam ad dolor culpa eiusmod sit minim anim adipisicing labore in laboris amet. Velit consectetur sint minim nulla non elit. Pariatur nostrud occaecat id cupidatat. Exercitation commodo laborum dolore voluptate reprehenderit quis cupidatat velit.
+
+#### Community distribution
+![Distribution of communities](images/distr.png "Distribution of communities")
+
+#### Community graphs
+##### Books community graph
+![Books community graph](images/graph_comm_books.png "Books community graph")
+
+##### Movies community graph
+![Movie community graph](images/graph_comm_movie.png "Movies community graph")
+
+##### Combined community graph
+![Combined community graph](images/graph_comm_comb.png "Combined community graph")
+
+#### TF-IDF wordclouds 
+![Wordclouds](images/wordclouds.jpg "Wordclouds")
+
+#### Sentiment over time
+![Sentiment over time](images/plot_sentiment.png "Sentiment over time")
+
+#### Sentiment for communities
+##### Books communities sentiment
+
+|   | community | mean sentiment     |
+|---|-----------|--------------------|
+| 2 | frodo     | 5.490858970266937  |
+| 0 | aragorn   | 5.485192309208288  |
+| 1 | denethor  | 5.478623393959455  |
+| 4 | saruman   | 5.475947778166416  |
+| 3 | horn      | 5.3939784227845555 |
+
+##### Movies communities sentiment
+
+|   | community | mean sentiment    |
+|---|-----------|-------------------|
+| 1 | frodo     | 5.398292395031444 |
+| 3 | gimli     | 5.392005576208235 |
+| 0 | aragorn   | 5.388042271911186 |
+| 4 | saruman   | 5.38325281640115  |
+| 2 | gandalf   | 5.371323242476146 |
+
 ### Comments
 Mollit esse ipsum sunt consequat officia quis et duis dolore. Adipisicing in id ea deserunt occaecat velit consectetur Lorem. Quis esse magna voluptate mollit. Sit ad amet culpa ea velit anim nulla elit velit laborum occaecat et tempor duis. Aute irure irure incididunt incididunt cillum cillum tempor voluptate sunt ut sint officia proident quis. In commodo ut do sunt laborum magna ipsum deserunt deserunt adipisicing proident laboris officia.
 
