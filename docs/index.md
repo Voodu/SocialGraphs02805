@@ -18,9 +18,10 @@ There are two main goals of the project:
     - Are there any strict communities or hubs?
     - Which characters are the most important?
     - Is there anything interesting about races?
-2. Determining sentiment of the books and movies over time
-    - TODO
-    - TODO
+2. Determining communities and sentiment of the books and movies over time
+    - How do communities look like in books and movies?
+    - Does TF-IDF wordclouds calculated using text chunks resemble the feelings of readers/viewers?
+    - Does the sentiment align between books and movies?
 
 ## Graph analysis
 
@@ -30,87 +31,114 @@ First part concerned mainly exploratory analysis of the network and getting to k
 
 We performed analysis on several graph combinations:
 
--   books graph
--   movies graph
--   combined graph
+-   books graph,
+-   movies graph,
+-   combined graph.
 
 For every situation we:
 
--   checked node & edge count
--   checked node degree distribution
--   determined most connected nodes
--   plotted the network
-
-Further, we examined the communities exisiting in the network. #TODO
+-   checked node & edge count,
+-   checked node degree distribution,
+-   determined most connected nodes,
+-   plotted the network.
 
 That analysis gave us good understanding of the network, connections between nodes, and its overall shape.
 
 ### Results
 
 #### Basic analysis
+First of all, there's clear difference between number of nodes in books graph and movies graph. The former one has 149 nodes, while the latter one has only 62 of them. Obviously, it was easier for Tolkien to write about some character (or at least mention them) than for Jackson to find nearly 150 cast members (not including background actors). This leads to the conclusion that book is over 2 times more rich in content in terms of number of characters.
 
--   Node/Edge counts
+It is also interesting that combined graph contains 155 nodes, so 6 more than books. It means that some characters were created by movie director, even though they did not appear in the original book.
 
-    | network  | node count | edge count |
-    | -------- | ---------- | ---------- |
-    | books    | 129        | 1871       |
-    | movies   | 62         | 770        |
-    | combined | 155        | 2136       |
+Another conclusion from the number of nodes and edges is that one has to read the books and watch the movies to have some basic knowledge about every character in the Lord of the Rings universe.
 
--   Node degree distributions:
+##### Node/Edge counts
 
-    ![Node degree distributions](images/nodes_distr.png 'Books community graph')
+| network  | node count | edge count |
+| -------- | ---------- | ---------- |
+| books    | 129        | 1871       |
+| movies   | 62         | 770        |
+| combined | 155        | 2136       |
 
--   Top characters
-    <table>
-    <tr><th>Books</th><th>Movies</th><th>Combined</th></tr><tr><td>
+##### Node degree distributions:
 
-    | Name    | Degree |
-    | ------- | ------ |
-    | Gandalf | 108    |
-    | Frodo   | 103    |
-    | Pippin  | 103    |
-    | Merry   | 99     |
-    | Horn    | 99     |
+In general, one can think that the degree distributions follow the power-law, but it is not exactly the case here. For network to be scale-free, there should be big number of nodes with the lowest degree (i.e. 1) and it should exponentially decrease with the degree. Here, on every plot the highest count is around degree 10. It decreases later, but it does not happen smoothly. One can say, at most, that those networks are 'scale-free-like'. It makes perfect sense, though, as they are not typical social networks or semantic networks. They are artificially build using predefined chunk size. They may be considered as semi-social networks, as they are build using character interactions.
 
-    </td><td>
+It is also quite interesting that nodes in movie network have lower degree in general - they vary between 1 and around 60, while in books they go from 1 to around 120. This may be caused by the different nature of media - in a book a character can think about someone else who is not currently present with them. In a movie, there are no character thoughts and characters interact only with those present in the scene with them. Therefore, there is less 'mixing' of the characters, as they are contained in their scenes. Moreover, there are just more characters mentioned in the books, as seen in the node counts.
 
-    | Name    | Degree |
-    | ------- | ------ |
-    | Aragorn | 59     |
-    | Legolas | 57     |
-    | Gimli   | 56     |
-    | Gandalf | 52     |
-    | Frodo   | 51     |
+![Node degree distributions](images/nodes_distr.png 'Books community graph')
 
-    </td><td>
+##### Top characters
 
-    | Name    | Degree |
-    | ------- | ------ |
-    | Gandalf | 120    |
-    | Pippin  | 111    |
-    | Frodo   | 109    |
-    | Merry   | 106    |
-    | Horn    | 102    |
+The most connected nodes in all the graphs are partially similar, but not as much as one may assume. All of them include some of the most important characters like four hobbits, Gandalf or Aragorn. Books are more focused on hobbits, i.e. Frodo, Sam, Merry, and Pippin, as they occupy top positions in the ranking, while movies are more focused on Aragorn, Legolas, Gimli, Gandalf and Frodo - the team one usually sees on the movie posters. The biggest surprise is very high degree of Bilbo in books. It may be caused by the fact, the he is uncle of Frodo who mentions him quite often in the book. In movie there is no way to show character's thoughts, so Bilbo is not as highly ranked as in the book.
 
-    </td></tr></table>
 
--   Race-colored graphs
+<table>
+<tr><th>Books</th><th>Movies</th><th>Combined</th></tr><tr><td>
 
-    **Books**
-    ![Books race graph](images/basic_vis4.png 'Books race graph')
+| Name    | Degree |
+| ------- | ------ |
+| Gandalf | 108    |
+| Frodo   | 103    |
+| Pippin  | 103    |
+| Merry   | 99     |
+| Horn    | 99     |
 
-    **Movies**
-    ![Movies race graph](images/basic_vis5.png 'Movies race graph')
+</td><td>
 
-    **Combined**
-    ![Combined race graph](images/basic_vis5.png 'Combined race graph')
+| Name    | Degree |
+| ------- | ------ |
+| Aragorn | 59     |
+| Legolas | 57     |
+| Gimli   | 56     |
+| Gandalf | 52     |
+| Frodo   | 51     |
+
+</td><td>
+
+| Name    | Degree |
+| ------- | ------ |
+| Gandalf | 120    |
+| Pippin  | 111    |
+| Frodo   | 109    |
+| Merry   | 106    |
+| Horn    | 102    |
+
+</td></tr></table>
+
+#### Race-colored graphs
+The graphs confirm observations from the previous points - as books have more nodes and more connections between them, the graph looks way more dense than the movie one.
+
+Also, thanks to the coloring of nodes, it can be observed that, although there are many creature races in the book and movies, vast majority of the characters in the story are men or hobbits.
+
+**Books**
+![Books race graph](images/basic_vis4.png 'Books race graph')
+
+**Movies**
+![Movies race graph](images/basic_vis5.png 'Movies race graph')
+
+**Combined**
+![Combined race graph](images/basic_vis5.png 'Combined race graph')
+
+## Community analysis
+### Data
+The data to accomplish this exercise comes mainly from the previous exercise.
+
+### Procedure
+We examined the communities existing in the network:
+
+-  finding communities and providing basic statistics about them,
+-  plotting graphs depending on communities to check how characters are connected,
+-  creating TF-IDF for communities and text chunks for each community.
 
 #### Community distribution
+The sizes are similar between the sources. The interesting fact is that combined communities have greater number of nodes in each community and it contains one more community than book and movie sources. Movie communities are the smallest because due to the much smaller amount of words, fewer characters were introduced explicitly. It seems that book communities fill the gap in the combined option.
 
 ![Distribution of communities](images/distr.png 'Distribution of communities')
 
 #### Community graphs
+After plotting the graphs where nodes are coloured by the community, it can be seen that communities not only are bounded by the race of the characters but additionally by their relationship and the area (the chapter or section of occurence) in the books and movies. This example could be presented by the connections for Bilbo. On the movie graph, this relation is much less significant than in the books which places Bilbo as more significant character in books than in movies. Also in books Bilbo has got much more connections inside of his community than in movies. Moreover, Merry and Pippin are in different communities in books but they are highly significant. On the other hand, in movies they are presented almost always together thus they are in one community. Combined graph seem to have combined properties of those facts mentioned above.
 
 ##### Books community graph
 
@@ -125,61 +153,70 @@ That analysis gave us good understanding of the network, connections between nod
 ![Combined community graph](images/graph_comm_comb.png 'Combined community graph')
 
 #### TF-IDF wordclouds
+For presentation purposes to show communities in one source, only the book communities were chosen to present wordclouds. Not every wordcloud seems to present significant results, however some of them could be discussed.
+* "Théoden" – one can see words like Rohan, king, horse – those words are associated with this character.
+* "Elrond" – the Fellowship of the Ring is present here.
+* "Frodo" – words seem to be much bigger and there are associations like Sam, Bilbo, dark, eye, hobbit.
 
-![Wordclouds](images/wordclouds.jpg 'Wordclouds')
+![Wordclouds](images/wordclouds.png 'Wordclouds')
 
 ### Comments
 
-Mollit esse ipsum sunt consequat officia quis et duis dolore. Adipisicing in id ea deserunt occaecat velit consectetur Lorem. Quis esse magna voluptate mollit. Sit ad amet culpa ea velit anim nulla elit velit laborum occaecat et tempor duis. Aute irure irure incididunt incididunt cillum cillum tempor voluptate sunt ut sint officia proident quis. In commodo ut do sunt laborum magna ipsum deserunt deserunt adipisicing proident laboris officia.
+The communities seem to be correct. Further investigation could be required to answer the questions such as "Why Merry is inside of the orcs and ents community in the books?". Moreover, it turned out that chosen method for creating wordclouds (selecting chunks where the community member name exists and adding the chunk to community text container) provides fine results.
 
 ## Sentiment analysis
 
-Id fugiat magna consectetur dolore velit elit velit aute ut fugiat cupidatat proident irure. Minim exercitation mollit ipsum culpa dolor id commodo. Nisi sit ea minim est minim. Do anim fugiat veniam ad incididunt do qui laboris sunt. Cupidatat ipsum occaecat sunt ea dolore labore irure cillum est veniam veniam. Ipsum consequat velit labore enim tempor reprehenderit velit. Ea nisi sunt laborum ea reprehenderit in laboris enim magna exercitation commodo sunt magna.
-
 ### Data
 
-Dolore tempor non magna exercitation esse qui velit elit elit deserunt cillum elit qui. Officia consequat ex Lorem sunt exercitation adipisicing deserunt quis aute. Cupidatat magna nostrud fugiat nisi laborum reprehenderit adipisicing ex. Reprehenderit eiusmod amet aliquip et laborum irure deserunt officia veniam sint laboris. Ad elit cillum nostrud irure ea ad sit officia occaecat in adipisicing veniam officia. Et amet velit commodo minim reprehenderit Lorem et eu voluptate culpa occaecat veniam.
+Two groups of texts were used in this exercise. Firstly, the source books and movies scripts were split in chunks to calculate rolling sentiment over time. Secondly, during the creation of wordclouds, the community texts were created for which the sentiment will be calculated.
 
 ### Procedure
 
-Ut occaecat qui enim officia irure minim. Fugiat sit magna eu Lorem laborum laboris. Aliquip eu qui consequat do magna sit eiusmod excepteur nulla nisi esse. Culpa cillum quis duis do commodo id cillum eu qui veniam laboris.
+To calculate the sentiment we:
+
+- compared sentiment over time in every part of book and movie,
+- calculated sentiment in each community.
 
 ### Results
 
-Aliquip id nisi esse nisi nisi do nisi nulla fugiat cillum et. Adipisicing dolor velit aliqua quis dolor Lorem fugiat cillum tempor incididunt. Irure ea sunt quis culpa laboris incididunt veniam reprehenderit laborum minim sint. Veniam culpa amet tempor occaecat nostrud do nostrud ut ullamco amet deserunt. In sit Lorem laboris qui duis deserunt. Deserunt ea adipisicing voluptate voluptate sit exercitation aute adipisicing pariatur occaecat est pariatur.
-
 #### Sentiment over time
+Below, the comparison for each part of the trilogy in both sources was presented. The movie sentiment fluctuates much more than the book one - probably because of the amount of words in each source. Nonetheless, the lines are relatively aligned, especially, especially during the climaxes at the end of first and third part of the trilogy. What is worth mentioning is the fact that there is no guarantee that fact in books and movies are presented at the same order. Moreover, the viewers feel the sentiment from the movie frames mainly, thus not every moment in the films might be properly interpreted by the average sentiment. The sudden drops in sentiment at the end are caused by small size of the last chunk - chunks are not evenly sized.
 
 ![Sentiment over time](images/plot_sentiment.png 'Sentiment over time')
 
 #### Sentiment for communities
+The happiest community throughout the books is "Merry", probably because of the fact that this is small community (see the graph) and the Merry is mostly connected character there – he is very positive character. The saddest community is represented by "Horn" – the orc surrounded by others of the same race which is an obvious fact – they are representing the evil in the world of Middle-earth.
+
+As far as movies are concerned, the situation is very similar to the books. What is different here, the saddest community is represented by Denethor – the Steward of Gondor who wanted to burn his son alive and his community also contains negative characters like orcs. In this community there is also Frodo – probably walking with ring has surrounded him with a lot of negativity.
+
 <table><tr><th>Books</th><th>Movies</th></tr><tr><td>
 
-|     | community | mean sentiment     |
-| --- | --------- | ------------------ |
-| 2   | frodo     | 5.490858970266937  |
-| 0   | aragorn   | 5.485192309208288  |
-| 1   | denethor  | 5.478623393959455  |
-| 4   | saruman   | 5.475947778166416  |
-| 3   | horn      | 5.3939784227845555 |
+| community | mean sentiment     |
+| --------- | ------------------ |
+| merry     |     5.521230       |
+| théoden   |     5.481627       |
+| elrond    |     5.477176       |
+| frodo     |     5.474550       |
+| pippin    |     5.466320       |
+| horn      |     5.373511       |
 </td><td>
 
-|     | community | mean sentiment    |
-| --- | --------- | ----------------- |
-| 1   | frodo     | 5.398292395031444 |
-| 3   | gimli     | 5.392005576208235 |
-| 0   | aragorn   | 5.388042271911186 |
-| 4   | saruman   | 5.38325281640115  |
-| 2   | gandalf   | 5.371323242476146 |
+| community | mean sentiment    |
+| --------- | ----------------- |
+| merry     | 5.493679          |
+| gandalf   | 5.406756          |
+| théoden   | 5.382372          |
+| gamling   | 5.360385          |
+| denethor  | 5.348106          |
+| &nbsp;    | &nbsp;            |
 </td></tr></table>
 
-### Comments
-
-Veniam aute incididunt velit amet occaecat commodo. Veniam occaecat voluptate aliqua ipsum velit labore consectetur laborum. Consequat ullamco fugiat incididunt dolor elit. Officia cupidatat cupidatat dolore ut. Sit enim velit pariatur adipisicing labore amet exercitation. Labore culpa velit deserunt qui elit mollit ex eiusmod.
 
 ## Closing remarks
 
-Reprehenderit exercitation laboris cillum sit. Sunt do reprehenderit ut Lorem dolor. Aliquip duis proident sit magna dolor eiusmod nulla esse ut ut ut magna. Labore nisi irure pariatur labore ut qui commodo excepteur non ad. Dolore est elit enim laboris laboris cillum minim duis sit culpa laborum adipisicing. Eu occaecat et commodo Lorem laboris commodo laboris ea velit.
+Our results expose the most important differences and indicate biggest similarities between books and movies. While most of them are not surprising, some of them are thought provoking, ex. how big is the difference between number of characters in the books and movies.
+
+To provide more interesting network analysis, more manual work with extended domain knowledge is required. Unfortunately, wiki is not complete, i.e. there are very few common attributes as race for every character. If there were additional information (ex. conflict side), more interesting insights would be possible to derive. The above analysis still enabled to understand the differences between book and movies, but definitely can be extended by providing additional data.
 
 ### Downloads & sources
 
